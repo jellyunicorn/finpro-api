@@ -7,12 +7,35 @@ datasource db {
   provider = "postgresql"
 }
 
-model Sample {
+model User {
   id        Int       @id @default(autoincrement())
-  name      String
-  deletedAt DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  email     String    @unique
+  password  String?
+  birthdate DateTime? @map("birth_date")
+  phone     String?
+  role      Role      @default(USER)
+  avatar    String?
+  fullName  String    @map("full_name")
+  provider  Provider  @default(CREDENTIALS)
+  verifiedAt DateTime? @map("verified_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  DeletedAt DateTime? @map("deleted_at")
+  // refreshToken RefreshToken?
 
-  @@map("samples")
+  @@map("users")
+}
+
+enum Role {
+  USER
+  ADMIN
+  DRIVER
+  WORKER
+  SUPERADMIN
+}
+
+enum Provider {
+  GOOGLE
+  APPLE
+  CREDENTIALS
 }
