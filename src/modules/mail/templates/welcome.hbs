@@ -1,0 +1,244 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Welcome to Claundry</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
+    </style>
+  </head>
+  <body
+    style="margin: 0; padding: 0; background-color: #BAD6F5; font-family: 'DM Sans', Arial, sans-serif; display:flex; justify-items:center align-items:center;"
+  >
+    <table
+      role="presentation"
+      width="100%"
+      cellspacing="0"
+      cellpadding="0"
+      style="background-color: #BAD6F5; padding: 40px 20px;"
+    >
+      <tr>
+        <td align="center">
+
+          <!-- Main Card -->
+          <table
+            role="presentation"
+            width="100%"
+            cellspacing="0"
+            cellpadding="0"
+            style="max-width: 560px; background-color: #ffffff; border-radius: 20px; overflow: hidden;"
+          >
+
+            <!-- Header -->
+            <tr>
+              <td align="center" style="padding: 40px 40px 0 40px;">
+                <!-- Logo wordmark -->
+                <img
+                  src="{{logoUrl}}"
+                  alt="Claundry"
+                  height="36"
+                  style="display: block; margin: 0 auto; border: 0;"
+                />
+              </td>
+            </tr>
+
+            <!-- Hero band -->
+            <tr>
+              <td style="padding: 32px 40px 0 40px;">
+                <div
+                  style="background-color: #BAD6F5; border-radius: 14px; padding: 32px; text-align: center;"
+                >
+                  <h1
+                    style="margin: 0 0 8px 0; font-size: 28px; font-weight: 500; color: #004DE5; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.2;"
+                  >
+                    Fresh laundry on time,<br />zero effort.
+                  </h1>
+                  <p
+                    style="margin: 0; font-size: 14px; color: #296FDA; font-family: 'DM Sans', Arial, sans-serif;"
+                  >
+                    Schedule a pickup, track your order, get fresh clothes back.
+                  </p>
+                </div>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding: 36px 40px 0 40px;">
+                <p
+                  style="margin: 0 0 8px 0; font-size: 22px; font-weight: 500; color: #1a1a1a; font-family: 'DM Sans', Arial, sans-serif;"
+                >
+                  Hi,
+                  {{name}}
+                  👋
+                </p>
+                <p
+                  style="margin: 0 0 20px 0; font-size: 15px; color: #555555; line-height: 1.6; font-family: 'DM Sans', Arial, sans-serif;"
+                >
+                  One more step before we start! , we need to verify your email
+                  before we can start washing your laundry for you, press the
+                  button below to verify this email.
+                </p>
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin-top: 24px; margin-bottom: 8px;"
+                >
+                  <tr>
+                    <td align="center">
+                      <a
+                        href="{{verifyUrl}}"
+                        style="display: inline-block; padding: 14px 32px; background-color: #296FDA; color: #ffffff; font-size: 14px; font-weight: 600; font-family: 'DM Sans', Arial, sans-serif; text-decoration: none; border-radius: 100px;"
+                      >VERIFY MAIL</a>
+                    </td>
+                  </tr>
+                </table>
+                <p
+                  style="margin:20px 0px 0px 0px ; font-size: 15px; color: #555555; line-height: 1.6; font-family: 'DM Sans', Arial, sans-serif;"
+                >
+                  Meanwhile Here's what you can do with Claundry:
+                </p>
+
+                <!-- Features list -->
+                <table
+                  role="presentation"
+                  width="100%"
+                  cellspacing="0"
+                  cellpadding="0"
+                  style="margin-top: 20px;"
+                >
+                  <tr>
+                    <td
+                      style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;"
+                    >
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                      >
+                        <tr>
+                          <td
+                            style="width: 32px; vertical-align: top; padding-top: 2px;"
+                          >
+                            <div
+                              style="width: 24px; height: 24px; background-color: #BAD6F5; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px;"
+                            >📦</div>
+                          </td>
+                          <td style="padding-left: 12px;">
+                            <p
+                              style="margin: 0; font-size: 14px; font-weight: 600; color: #1a1a1a; font-family: 'DM Sans', Arial, sans-serif;"
+                            >Schedule a Pickup</p>
+                            <p
+                              style="margin: 4px 0 0 0; font-size: 13px; color: #777777; font-family: 'DM Sans', Arial, sans-serif;"
+                            >Choose your preferred date and time — we'll come to
+                              you.</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td
+                      style="padding: 10px 0; border-bottom: 1px solid #f0f0f0;"
+                    >
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                      >
+                        <tr>
+                          <td
+                            style="width: 32px; vertical-align: top; padding-top: 2px;"
+                          >
+                            <div
+                              style="width: 24px; height: 24px; background-color: #BAD6F5; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px;"
+                            >📍</div>
+                          </td>
+                          <td style="padding-left: 12px;">
+                            <p
+                              style="margin: 0; font-size: 14px; font-weight: 600; color: #1a1a1a; font-family: 'DM Sans', Arial, sans-serif;"
+                            >Track Your Order</p>
+                            <p
+                              style="margin: 4px 0 0 0; font-size: 13px; color: #777777; font-family: 'DM Sans', Arial, sans-serif;"
+                            >Real-time updates from pickup to delivery, right in
+                              your dashboard.</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 10px 0;">
+                      <table
+                        role="presentation"
+                        cellspacing="0"
+                        cellpadding="0"
+                      >
+                        <tr>
+                          <td
+                            style="width: 32px; vertical-align: top; padding-top: 2px;"
+                          >
+                            <div
+                              style="width: 24px; height: 24px; background-color: #BAD6F5; border-radius: 50%; text-align: center; line-height: 24px; font-size: 12px;"
+                            >✨</div>
+                          </td>
+                          <td style="padding-left: 12px;">
+                            <p
+                              style="margin: 0; font-size: 14px; font-weight: 600; color: #1a1a1a; font-family: 'DM Sans', Arial, sans-serif;"
+                            >Fresh Clothes Delivered</p>
+                            <p
+                              style="margin: 4px 0 0 0; font-size: 13px; color: #777777; font-family: 'DM Sans', Arial, sans-serif;"
+                            >Clean, folded, and back at your door — zero effort
+                              required.</p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- CTA -->
+
+            <!-- Divider -->
+            <tr>
+              <td style="padding: 0 40px;">
+                <div style="border-top: 1px solid #eeeeee;"></div>
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="padding: 28px 40px 36px 40px; text-align: center;">
+                <p
+                  style="margin: 0 0 4px 0; font-size: 12px; font-weight: 700; color: #1a1a1a; letter-spacing: 0.05em; font-family: 'DM Sans', Arial, sans-serif;"
+                >
+                  PT. CUCI KAIN ANGKASA
+                </p>
+                <p
+                  style="margin: 0 0 16px 0; font-size: 11px; color: #999999; font-family: 'DM Sans', Arial, sans-serif;"
+                >
+                  Jl. Jendral Sudirman Kav. 52-53, SCBD, Jakarta Selatan, 12190
+                </p>
+                <p
+                  style="margin: 0; font-size: 10px; color: #bbbbbb; font-family: 'DM Sans', Arial, sans-serif; line-height: 1.5;"
+                >
+                  © 2024 PT. CUCI KAIN ANGKASA. All rights reserved.<br />
+                  You received this email because you created an account on
+                  Claundry.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+          <!-- /Main Card -->
+
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

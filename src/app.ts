@@ -12,6 +12,7 @@ import { ValidationMiddleware } from "./middlewares/validation.middleware.js";
 import { AuthRouter } from "./modules/auth/auth.router.js";
 import { AuthController } from "./modules/auth/auth.controller.js";
 import { AuthService } from "./modules/auth/auth.service.js";
+import { MailService } from "./modules/mail/mail.service.js";
 
 export class App {
   app: Express;
@@ -31,7 +32,8 @@ export class App {
 
   private registerModules() {
     // services
-    const authService = new AuthService(prisma);
+    const mailService = new MailService();
+    const authService = new AuthService(prisma, mailService);
 
     // controllers
     const authController = new AuthController(authService);
