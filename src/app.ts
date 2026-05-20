@@ -13,6 +13,7 @@ import { AuthRouter } from "./modules/auth/auth.router.js";
 import { AuthController } from "./modules/auth/auth.controller.js";
 import { AuthService } from "./modules/auth/auth.service.js";
 import { MailService } from "./modules/mail/mail.service.js";
+import { corsOptions } from "./config/cors.js";
 
 export class App {
   app: Express;
@@ -23,7 +24,7 @@ export class App {
   }
 
   private configure() {
-    this.app.use(cors());
+    this.app.use(cors(corsOptions));
     this.app.use(loggerHttp);
     this.app.use(express.json());
     this.registerModules();
