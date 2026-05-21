@@ -1,10 +1,14 @@
 import jwt from "jsonwebtoken";
 import { Prisma, PrismaClient } from "../../../generated/prisma/client.js";
-import { RegisterDTO } from "./dto/auth.dto.js";
+import { loginDTO, registerDTO } from "./dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
-import { hash } from "argon2";
+import { hash, verify } from "argon2";
 import { createUserDTO } from "./dto/createuser.dto.js";
+import {
+  EXPIRED_ACCESS_TOKEN_JWT,
+  EXPIRED_REFRESH_TOKEN_JWT,
+} from "./authConstants.js";
 
 export class AuthService {
   constructor(
@@ -12,7 +16,7 @@ export class AuthService {
     private mailService: MailService,
   ) {}
 
-  register = async (body: RegisterDTO) => {
+  register = async (body: registerDTO) => {
     const trimEmail = body.email.toLowerCase().trim();
     const existingEmail = await this.prisma.user.findUnique({
       where: { email: trimEmail },
@@ -105,5 +109,40 @@ export class AuthService {
     }
 
     return { message: "Successfully registered & activated" };
+  };
+
+  loginService = async (body: loginDTO) => {
+    const result = await this.prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { email: body.email },
+      });
+
+      if (!user || !user.password) {
+        throw new ApiError("Invalid credentials", 400);
+      }
+
+      const isPassMatch = await verify(user.password, body.password);
+
+      if (!isPassMatch) {
+        throw new ApiError("Invalid credentials", 400);
+      }
+
+      const payload = {
+        id: user.id,
+        role: user.role,
+      };
+
+      const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
+        expiresIn: EXPIRED_ACCESS_TOKEN_JWT,
+      });
+
+      const refreshToken = jwt.sign(payload, process.env.JWT_SECRET_REFRESH!, {
+        expiresIn: EXPIRED_REFRESH_TOKEN_JWT,
+      });
+
+      return { id: user.id, role: user.role };
+    });
+
+    return result;
   };
 }

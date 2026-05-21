@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { AuthController } from "./auth.controller.js";
-import { RegisterDTO } from "./dto/auth.dto.js";
+import { loginDTO, registerDTO } from "./dto/auth.dto.js";
 import { createUserDTO } from "./dto/createuser.dto.js";
 
 export class AuthRouter {
@@ -18,13 +18,18 @@ export class AuthRouter {
   private initializedRoutes = () => {
     this.router.post(
       "/register",
-      this.validationMiddleware.validateBody(RegisterDTO),
+      this.validationMiddleware.validateBody(registerDTO),
       this.authController.register,
     );
     this.router.post(
       "/create-user",
       this.validationMiddleware.validateBody(createUserDTO),
       this.authController.createUserService,
+    );
+    this.router.post(
+      "/login",
+      this.validationMiddleware.validateBody(loginDTO),
+      this.authController.loginService,
     );
     this.router.get("/verifyemail", this.authController.verifyEmail);
   };

@@ -6,9 +6,11 @@ import { ApiError } from "../utils/api-error.js";
 export class ValidationMiddleware {
   validateBody<T>(dtoClass: new () => T) {
     return async (req: Request, _res: Response, next: NextFunction) => {
-      const dtoInstance = plainToInstance(dtoClass, req.body);
+      if (!req.body || Object.keys(req.body).length === 0) {
+        throw new ApiError("Request body is required", 400);
+      }
 
-      if (!req.body) throw new ApiError("Request body is required", 400);
+      const dtoInstance = plainToInstance(dtoClass, req.body);
 
       const errors = await validate(dtoInstance as any);
 
