@@ -20,7 +20,11 @@ export class AuthController {
   };
 
   createUserService = async (req: Request, res: Response) => {
-    const result = await this.authService.createUserService(req.body);
+    const token = req.query.token as string;
+    if (!token) {
+      throw new ApiError("Token is required", 400);
+    }
+    const result = await this.authService.createUserService(token, req.body);
     res.status(200).send(result);
   };
 }

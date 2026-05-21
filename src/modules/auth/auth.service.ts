@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { PrismaClient, User } from "../../../generated/prisma/client.js";
+import { Prisma, PrismaClient } from "../../../generated/prisma/client.js";
 import { RegisterDTO } from "./dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
@@ -85,14 +85,24 @@ export class AuthService {
 
     const hashedPassword = await hash(body.password);
 
-    await this.prisma.user.create({
-      data: {
-        fullName: decoded.fullName,
-        email: decoded.email,
-        password: hashedPassword,
-        verifiedAt: new Date(),
-      },
-    });
+    try {
+      await this.prisma.user.create({
+        data: {
+          fullName: decoded.fullName,
+          email: decoded.email,
+          password: hashedPassword,
+          verifiedAt: new Date(),
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new ApiError("Token has been used", 400);
+      }
+      throw error;
+    }
 
     return { message: "Successfully registered & activated" };
   };
