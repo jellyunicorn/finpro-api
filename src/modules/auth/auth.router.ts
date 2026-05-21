@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { AuthController } from "./auth.controller.js";
-import { createUserDTO, RegisterDTO } from "./dto/auth.dto.js";
+import { RegisterDTO } from "./dto/auth.dto.js";
+import { createUserDTO } from "./dto/createuser.dto.js";
 
 export class AuthRouter {
   private router: Router;
@@ -21,7 +22,7 @@ export class AuthRouter {
       this.authController.register,
     );
     this.router.post(
-      "/createuser",
+      "/create-user",
       this.validationMiddleware.validateBody(createUserDTO),
       this.authController.createUserService,
     );

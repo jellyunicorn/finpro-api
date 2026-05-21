@@ -1,10 +1,11 @@
 import jwt from "jsonwebtoken";
 import { PrismaClient, User } from "../../../generated/prisma/client.js";
-import { createUserDTO, RegisterDTO } from "./dto/auth.dto.js";
+import { RegisterDTO } from "./dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
 import { env } from "../../utils/validatorEnv.js";
 import { hash } from "argon2";
+import { createUserDTO } from "./dto/createuser.dto.js";
 
 export class AuthService {
   constructor(
@@ -13,17 +14,17 @@ export class AuthService {
   ) {}
 
   register = async (body: RegisterDTO) => {
-    const trimemail = body.email.toLowerCase().trim();
-    const existingemail = await this.prisma.user.findUnique({
-      where: { email: trimemail },
+    const trimEmail = body.email.toLowerCase().trim();
+    const existingEmail = await this.prisma.user.findUnique({
+      where: { email: trimEmail },
     });
 
-    if (existingemail) {
+    if (existingEmail) {
       throw new ApiError("This Email is already in use", 409);
     }
 
     const token = jwt.sign(
-      { fullName: body.fullName, email: trimemail },
+      { fullName: body.fullName, email: trimEmail },
       env.JWT_VERIFY_SECRET,
       { expiresIn: "1h" },
     );
@@ -38,7 +39,7 @@ export class AuthService {
         verifyUrl: `${process.env.BASE_FE_URL}/verified?token=${token}`,
       },
     });
-    return { message: "User registration success" };
+    return { message: "Email has been sent" };
   };
 
   verifyEmail = async (token: string) => {
@@ -65,12 +66,12 @@ export class AuthService {
   };
 
   createUserService = async (body: createUserDTO) => {
-    const trimemail = body.email.toLowerCase().trim();
-    const existingemail = await this.prisma.user.findUnique({
-      where: { email: trimemail },
+    const trimEmail = body.email.toLowerCase().trim();
+    const existingEmail = await this.prisma.user.findUnique({
+      where: { email: trimEmail },
     });
 
-    if (existingemail) {
+    if (existingEmail) {
       throw new ApiError("This Email is already in use", 409);
     }
     const hashedPassword = await hash(body.password);
@@ -78,7 +79,7 @@ export class AuthService {
     const user = await this.prisma.user.create({
       data: {
         fullName: body.fullName,
-        email: trimemail,
+        email: trimEmail,
         password: hashedPassword,
         verifiedAt: new Date(),
       },
