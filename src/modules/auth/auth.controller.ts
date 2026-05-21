@@ -27,4 +27,9 @@ export class AuthController {
     const result = await this.authService.createUserService(token, req.body);
     res.status(200).send(result);
   };
+  loginService = async (req: Request, res: Response) => {
+    const body = req.body;
+    const result = await this.authService.loginService(body);
+    res.status(200).send(result);
+  };
 }
