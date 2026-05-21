@@ -8,6 +8,7 @@ import { createUserDTO } from "./dto/createuser.dto.js";
 import {
   EXPIRED_ACCESS_TOKEN_JWT,
   EXPIRED_REFRESH_TOKEN_JWT,
+  REFRESH_TOKEN_EXPIRES_IN,
 } from "./authConstants.js";
 
 export class AuthService {
@@ -140,7 +141,21 @@ export class AuthService {
         expiresIn: EXPIRED_REFRESH_TOKEN_JWT,
       });
 
-      return { id: user.id, role: user.role };
+      await tx.refreshToken.upsert({
+        where: { userId: user.id },
+        update: {
+          token: refreshToken,
+          expiredAt: new Date(REFRESH_TOKEN_EXPIRES_IN()),
+        },
+        create: {
+          token: refreshToken,
+          expiredAt: new Date(REFRESH_TOKEN_EXPIRES_IN()),
+          userId: user.id,
+        },
+      });
+
+      const { password, ...usernopass } = user;
+      return { user: usernopass, accessToken, refreshToken };
     });
 
     return result;
