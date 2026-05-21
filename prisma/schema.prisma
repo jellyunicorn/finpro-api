@@ -8,26 +8,24 @@ datasource db {
 }
 
 model User {
-  id         Int       @id @default(autoincrement())
-  email      String    @unique
-  password   String?
-  birthDate  DateTime? @map("birth_date")
-  phone      String?
-  role       Role      @default(USER)
-  avatar     String?
-  fullName   String    @map("full_name")
-  provider   Provider  @default(CREDENTIALS)
-  verifiedAt DateTime? @map("verified_at")
-  createdAt  DateTime  @default(now()) @map("created_at")
-  updatedAt  DateTime  @updatedAt @map("updated_at")
-  deletedAt  DateTime? @map("deleted_at")
-  // refreshToken RefreshToken?
-
-  employee      Employee?
-  address       UserAddress[]
-  orders        Order[]
-  notifications Notification[]
-  complaints    Complaint[]
+  id                 Int            @id @default(autoincrement())
+  email              String         @unique
+  password           String?
+  birthDate          DateTime?      @map("birth_date")
+  phone              String?
+  role               Role           @default(USER)
+  avatar             String?
+  fullName           String         @map("full_name")
+  provider           Provider       @default(CREDENTIALS)
+  verifiedAt         DateTime?      @map("verified_at")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  updatedAt          DateTime       @updatedAt @map("updated_at")
+  deletedAt          DateTime?      @map("deleted_at")
+  employee           Employee?
+  address            UserAddress[]
+  orders             Order[]
+  notifications      Notification[]
+  complaints         Complaint[]
 
   @@map("users")
 }
