@@ -3,7 +3,6 @@ import { PrismaClient, User } from "../../../generated/prisma/client.js";
 import { RegisterDTO } from "./dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
-import { env } from "../../utils/validatorEnv.js";
 import { hash } from "argon2";
 import { createUserDTO } from "./dto/createuser.dto.js";
 
@@ -25,7 +24,7 @@ export class AuthService {
 
     const token = jwt.sign(
       { fullName: body.fullName, email: trimEmail },
-      env.JWT_VERIFY_SECRET,
+      process.env.JWT_VERIFY_SECRET as string,
       { expiresIn: "1h" },
     );
 
@@ -46,7 +45,7 @@ export class AuthService {
     let decoded: { fullName: string; email: string };
 
     try {
-      decoded = jwt.verify(token, env.JWT_VERIFY_SECRET) as {
+      decoded = jwt.verify(token, process.env.JWT_VERIFY_SECRET!) as {
         fullName: string;
         email: string;
       };
