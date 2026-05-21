@@ -2,6 +2,11 @@ import { Request, Response } from "express";
 import { AuthService } from "./auth.service.js";
 import { ApiError } from "../../utils/api-error.js";
 import { cookieOptions } from "../../config/cookie.js";
+import {
+  EXPIRED_ACCESS_TOKEN_JWT,
+  EXPIRED_RESET_TOKEN_JWT,
+} from "./authConstants.js";
+import ms from "ms";
 
 export class AuthController {
   constructor(private authService: AuthService) {}
@@ -35,11 +40,11 @@ export class AuthController {
       await this.authService.loginService(body);
     res.cookie("accessToken", accessToken, {
       ...cookieOptions,
-      maxAge: 10 * 60 * 1000,
+      maxAge: ms(EXPIRED_ACCESS_TOKEN_JWT),
     });
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: ms(EXPIRED_RESET_TOKEN_JWT),
     });
     res.status(200).send(result);
   };
