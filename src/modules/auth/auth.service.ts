@@ -57,32 +57,43 @@ export class AuthService {
       where: { email: decoded.email },
     });
 
-    if (existingUser) {
+    if (existingUser?.verifiedAt) {
       throw new ApiError("Token has been used", 400);
     }
 
     return { email: decoded.email, fullName: decoded.fullName };
   };
 
-  createUserService = async (body: createUserDTO) => {
-    const trimEmail = body.email.toLowerCase().trim();
-    const existingEmail = await this.prisma.user.findUnique({
-      where: { email: trimEmail },
+  createUserService = async (token: string, body: createUserDTO) => {
+    let decoded: { fullName: string; email: string };
+
+    try {
+      decoded = jwt.verify(token, process.env.JWT_VERIFY_SECRET!) as {
+        fullName: string;
+        email: string;
+      };
+    } catch (error) {
+      throw new ApiError("Invalid or expired token", 400);
+    }
+    const existingUser = await this.prisma.user.findUnique({
+      where: { email: decoded.email },
     });
 
-    if (existingEmail) {
-      throw new ApiError("This Email is already in use", 409);
+    if (existingUser?.verifiedAt) {
+      throw new ApiError("Token has been used", 400);
     }
+
     const hashedPassword = await hash(body.password);
 
-    const user = await this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
-        fullName: body.fullName,
-        email: trimEmail,
+        fullName: decoded.fullName,
+        email: decoded.email,
         password: hashedPassword,
         verifiedAt: new Date(),
       },
     });
+
     return { message: "Successfully registered & activated" };
   };
 }
