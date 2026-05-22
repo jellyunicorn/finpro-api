@@ -14,6 +14,7 @@ import { AuthController } from "./modules/auth/auth.controller.js";
 import { AuthService } from "./modules/auth/auth.service.js";
 import { MailService } from "./modules/mail/mail.service.js";
 import { corsOptions } from "./config/cors.js";
+import { AuthMiddleware } from "./middlewares/auth.middleware.js";
 
 export class App {
   app: Express;
@@ -40,6 +41,7 @@ export class App {
     const authController = new AuthController(authService);
 
     // middlewares
+    const authMiddleware = new AuthMiddleware();
     const validationMiddleware = new ValidationMiddleware();
 
     // routes

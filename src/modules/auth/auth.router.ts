@@ -31,7 +31,10 @@ export class AuthRouter {
       this.validationMiddleware.validateBody(loginDTO),
       this.authController.loginService,
     );
+    this.router.post("/login/google", this.authController.googleLogin);
+    this.router.post("/register/google", this.authController.googleRegister);
     this.router.get("/verifyemail", this.authController.verifyEmail);
+    this.router.get("/refresh", this.authController.verifyEmail);
   };
 
   getRouter = () => {

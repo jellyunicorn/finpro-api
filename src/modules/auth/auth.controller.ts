@@ -16,6 +16,15 @@ export class AuthController {
     res.status(200).send(result);
   };
 
+  refreshAccessToken = async (req: Request, res: Response) => {
+    const refreshToken = req.cookies.refreshToken;
+    const { accessToken } =
+      await this.authService.refreshAccessToken(refreshToken);
+
+    res.cookie("accessToken", accessToken, cookieOptions);
+    res.status(200).send({ message: "Access token has been refreshed" });
+  };
+
   verifyEmail = async (req: Request, res: Response) => {
     const token = req.query.token as string;
     if (!token) {
@@ -47,5 +56,21 @@ export class AuthController {
       maxAge: ms(EXPIRED_RESET_TOKEN_JWT),
     });
     res.status(200).send(result);
+  };
+
+  googleLogin = async (req: Request, res: Response) => {
+    const { userWithoutPassword, accessToken, refreshToken } =
+      await this.authService.googleLogin(req.body);
+
+    res.cookie("accessToken", accessToken, cookieOptions);
+    res.cookie("refreshToken", refreshToken, cookieOptions);
+
+    res.status(200).send({ user: userWithoutPassword });
+  };
+
+  googleRegister = async (req: Request, res: Response) => {
+    const { userWithoutPassword, accessToken, refreshToken } =
+      await this.authService.googleRegister(req.body);
+    res.status(200).send({ user: userWithoutPassword });
   };
 }
