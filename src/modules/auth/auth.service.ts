@@ -318,4 +318,10 @@ export class AuthService {
 
     return { userWithoutPassword, accessToken, refreshToken };
   };
+
+  logout = async (userId: number) => {
+    await this.prisma.refreshToken.deleteMany({
+      where: { id: userId },
+    });
+  };
 }

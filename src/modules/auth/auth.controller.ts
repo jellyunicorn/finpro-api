@@ -73,4 +73,13 @@ export class AuthController {
       await this.authService.googleRegister(req.body);
     res.status(200).send({ user: userWithoutPassword });
   };
+
+  logout = async (req: Request, res: Response) => {
+    const userId = res.locals.user.id;
+
+    await this.authService.logout(userId);
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+    res.status(200).send({ message: "successfully logged out" });
+  };
 }
