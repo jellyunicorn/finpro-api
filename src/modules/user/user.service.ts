@@ -14,6 +14,8 @@ export class UserService {
         role: true,
         avatar: true,
         verifiedAt: true,
+        provider: true,
+        birthDate: true,
       },
     });
     return { userdata };
