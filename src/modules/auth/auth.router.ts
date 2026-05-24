@@ -36,11 +36,16 @@ export class AuthRouter {
     this.router.post("/login/google", this.authController.googleLogin);
     this.router.post("/register/google", this.authController.googleRegister);
     this.router.get("/verifyemail", this.authController.verifyEmail);
-    this.router.get("/refresh", this.authController.verifyEmail);
+    this.router.post("/refresh", this.authController.refresh);
     this.router.post(
       "/logout",
       this.authMiddleware.verifyToken,
       this.authController.logout,
+    );
+    this.router.get(
+      "/me",
+      this.authMiddleware.verifyToken,
+      this.authController.checkrole,
     );
   };
 

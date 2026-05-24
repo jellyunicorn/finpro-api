@@ -84,7 +84,7 @@ export class AuthService {
     return { email: decoded.email, fullName: decoded.fullName };
   };
 
-  refreshAccessToken = async (refreshToken?: string) => {
+  refresh = async (refreshToken?: string) => {
     if (!refreshToken) throw new ApiError("No refresh token", 400);
 
     const usertoken = await this.prisma.refreshToken.findUnique({
@@ -193,7 +193,7 @@ export class AuthService {
         },
       });
 
-      const { password, ...usernopass } = user;
+      const { password, role, id, ...usernopass } = user;
       return { user: usernopass, accessToken, refreshToken };
     });
 
@@ -249,7 +249,7 @@ export class AuthService {
         userId: user.id,
       },
     });
-    const { password, ...userWithoutPassword } = user;
+    const { password, role, id, ...userWithoutPassword } = user;
 
     return { userWithoutPassword, accessToken, refreshToken };
   };
