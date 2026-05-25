@@ -19,6 +19,7 @@ import { AuthMiddleware } from "./middlewares/auth.middleware.js";
 import { UserRouter } from "./modules/user/user.router.js";
 import { UserController } from "./modules/user/user.controller.js";
 import { UserService } from "./modules/user/user.service.js";
+import { CloudinaryService } from "./modules/cloudinary/cloudinary.service.js";
 
 export class App {
   app: Express;
@@ -40,8 +41,10 @@ export class App {
   private registerModules() {
     // services
     const mailService = new MailService();
+    const cloudinaryService = new CloudinaryService();
+
     const authService = new AuthService(prisma, mailService);
-    const userService = new UserService(prisma);
+    const userService = new UserService(prisma, cloudinaryService);
 
     // controllers
     const authController = new AuthController(authService);
@@ -57,7 +60,11 @@ export class App {
       authMiddleware,
       validationMiddleware,
     );
-    const userRouter = new UserRouter(userController, authMiddleware);
+    const userRouter = new UserRouter(
+      userController,
+      authMiddleware,
+      validationMiddleware,
+    );
 
     // entry point
     this.app.use("/auth", authRouter.getRouter());

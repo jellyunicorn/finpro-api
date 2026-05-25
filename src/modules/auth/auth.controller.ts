@@ -4,6 +4,7 @@ import { ApiError } from "../../utils/api-error.js";
 import { cookieOptions } from "../../config/cookie.js";
 import {
   EXPIRED_ACCESS_TOKEN_JWT,
+  EXPIRED_REFRESH_TOKEN_JWT,
   EXPIRED_RESET_TOKEN_JWT,
 } from "./authConstants.js";
 import ms from "ms";
@@ -52,7 +53,7 @@ export class AuthController {
     });
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
-      maxAge: ms(EXPIRED_RESET_TOKEN_JWT),
+      maxAge: ms(EXPIRED_REFRESH_TOKEN_JWT),
     });
     res.status(200).send(result);
   };

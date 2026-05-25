@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { AuthController } from "./auth.controller.js";
-import { loginDTO, registerDTO } from "./dto/auth.dto.js";
-import { createUserDTO } from "./dto/createuser.dto.js";
+import { loginDTO, registerDTO } from "../dto/auth.dto.js";
+import { createUserDTO } from "../dto/createuser.dto.js";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 
 export class AuthRouter {

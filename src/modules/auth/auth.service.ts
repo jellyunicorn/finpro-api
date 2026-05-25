@@ -4,11 +4,11 @@ import {
   PrismaClient,
   Provider,
 } from "../../../generated/prisma/client.js";
-import { loginDTO, registerDTO } from "./dto/auth.dto.js";
+import { loginDTO, registerDTO } from "../dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
 import { hash, verify } from "argon2";
-import { createUserDTO } from "./dto/createuser.dto.js";
+import { createUserDTO } from "../dto/createuser.dto.js";
 import {
   EXPIRED_ACCESS_TOKEN_JWT,
   EXPIRED_REFRESH_TOKEN_JWT,
