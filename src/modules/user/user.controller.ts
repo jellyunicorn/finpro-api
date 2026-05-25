@@ -31,4 +31,27 @@ export class UserController {
     const result = await this.userService.updateUser(userId, body, file);
     res.status(200).send(result);
   };
+
+  resetPasswordEmail = async (req: Request, res: Response) => {
+    const result = await this.userService.resetPasswordEmail(req.body);
+    res.status(200).send(result);
+  };
+  verifyResetToken = async (req: Request, res: Response) => {
+    const token = req.query.token as string;
+    if (!token) {
+      throw new ApiError("Token is required", 400);
+    }
+    const result = await this.userService.verifyResetToken(token);
+    res.status(200).send(result);
+  };
+
+  changePassword = async (req: Request, res: Response) => {
+    const newPass = req.body.password;
+    const userId = res.locals.user.id;
+    if (!newPass) {
+      throw new ApiError("no new password is found", 400);
+    }
+    const result = await this.userService.changePassword(userId, newPass);
+    res.status(200).send(result);
+  };
 }

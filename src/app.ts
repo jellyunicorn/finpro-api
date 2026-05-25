@@ -44,7 +44,7 @@ export class App {
     const cloudinaryService = new CloudinaryService();
 
     const authService = new AuthService(prisma, mailService);
-    const userService = new UserService(prisma, cloudinaryService);
+    const userService = new UserService(prisma, cloudinaryService, mailService);
 
     // controllers
     const authController = new AuthController(authService);

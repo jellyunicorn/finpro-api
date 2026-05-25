@@ -99,6 +99,7 @@ export class AuthService {
     const payload = {
       id: usertoken.user.id,
       role: usertoken.user.role,
+      email: usertoken.user.email,
     };
 
     const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
@@ -170,6 +171,7 @@ export class AuthService {
       const payload = {
         id: user.id,
         role: user.role,
+        email: user.email,
       };
 
       const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
