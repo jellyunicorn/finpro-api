@@ -119,4 +119,90 @@ export class UserService {
     });
     return { message: "user password update successfull" };
   };
+
+  changeEmail = async (
+    newemail: string,
+    userdata: { email: string; fullName: string; id: number },
+  ) => {
+    const checkemail = await this.prisma.user.findUnique({
+      where: { email: newemail },
+    });
+
+    if (checkemail) {
+      throw new ApiError("This Email already Exists", 400);
+    }
+
+    const payload = {
+      id: userdata.id,
+      oldEmail: userdata.email,
+      newEmail: newemail,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET_EMAIL! as string, {
+      expiresIn: "10m",
+    });
+
+    await this.mailService.sendMail({
+      to: newemail,
+      subject: "Re-verify Your Newly Changed E-mail",
+      templateName: "reverify-email",
+      context: {
+        name: userdata.fullName,
+        logoUrl: process.env.MAIL_LOGO_URL,
+        verifyUrl: `${process.env.BASE_FE_URL}/dashboard/verify-mail?token=${token}`,
+      },
+    });
+
+    return { message: " email sent!" };
+  };
+
+  reverify = async (userdata: {
+    email: string;
+    fullName: string;
+    id: number;
+  }) => {
+    const payload = {
+      id: userdata.id,
+      oldEmail: userdata.email,
+    };
+    const token = jwt.sign(payload, process.env.JWT_SECRET_EMAIL! as string, {
+      expiresIn: "10m",
+    });
+
+    await this.mailService.sendMail({
+      to: userdata.email,
+      subject: "Re-verify Your E-mail",
+      templateName: "reverify-email",
+      context: {
+        name: userdata.fullName,
+        logoUrl: process.env.MAIL_LOGO_URL,
+        verifyUrl: `${process.env.BASE_FE_URL}/dashboard/verify-mail?token=${token}`,
+      },
+    });
+
+    return { message: " email sent!" };
+  };
+
+  executeEmailChange = async (token: string) => {
+    let decoded: { id: number; oldEmail: string; newEmail: string };
+
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_EMAIL!) as {
+        id: number;
+        oldEmail: string;
+        newEmail: string;
+      };
+    } catch (error) {
+      throw new ApiError("Invalid or expired token", 400);
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: decoded.id },
+      data: {
+        email: decoded.newEmail,
+        verifiedAt: new Date(),
+      },
+    });
+
+    return { message: "Email updated successfully" };
+  };
 }
