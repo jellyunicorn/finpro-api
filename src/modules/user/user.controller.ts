@@ -54,4 +54,25 @@ export class UserController {
     const result = await this.userService.changePassword(userId, newPass);
     res.status(200).send(result);
   };
+
+  executeEmailChange = async (req: Request, res: Response) => {
+    const token = req.query.token as string;
+    if (!token) {
+      throw new ApiError("Token is required", 400);
+    }
+    const result = await this.userService.executeEmailChange(token);
+    res.status(200).send(result);
+  };
+
+  changeEmail = async (req: Request, res: Response) => {
+    const userdata = res.locals.user;
+    const newEmail = req.body.email;
+    const result = await this.userService.changeEmail(newEmail, userdata);
+    res.status(200).send(result);
+  };
+  reverify = async (req: Request, res: Response) => {
+    const userdata = res.locals.user;
+    const result = await this.userService.reverify(userdata);
+    res.status(200).send(result);
+  };
 }

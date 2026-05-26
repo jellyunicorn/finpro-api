@@ -5,6 +5,7 @@ import { upload } from "../../config/multer.js";
 import { updateUserDTO } from "../dto/updateuser.dto.js";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { changePasswordDTO } from "../dto/resetpassword.dto.js";
+import { changeEmailDTO } from "../dto/changeemail.dto.js";
 
 export class UserRouter {
   private router: Router;
@@ -46,6 +47,19 @@ export class UserRouter {
       this.authMiddleware.verifyToken,
       this.validationMiddleware.validateBody(changePasswordDTO),
       this.userController.changePassword,
+    );
+    this.router.post("/execute-change", this.userController.executeEmailChange);
+    this.router.post(
+      "/reverify",
+      this.authMiddleware.verifyToken,
+
+      this.userController.reverify,
+    );
+    this.router.patch(
+      "/change-email",
+      this.authMiddleware.verifyToken,
+      this.validationMiddleware.validateBody(changeEmailDTO),
+      this.userController.changeEmail,
     );
   };
 
