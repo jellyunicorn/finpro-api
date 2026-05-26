@@ -4,11 +4,11 @@ import {
   PrismaClient,
   Provider,
 } from "../../../generated/prisma/client.js";
-import { loginDTO, registerDTO } from "./dto/auth.dto.js";
+import { loginDTO, registerDTO } from "../dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
 import { hash, verify } from "argon2";
-import { createUserDTO } from "./dto/createuser.dto.js";
+import { createUserDTO } from "../dto/createuser.dto.js";
 import {
   EXPIRED_ACCESS_TOKEN_JWT,
   EXPIRED_REFRESH_TOKEN_JWT,
@@ -84,7 +84,7 @@ export class AuthService {
     return { email: decoded.email, fullName: decoded.fullName };
   };
 
-  refreshAccessToken = async (refreshToken?: string) => {
+  refresh = async (refreshToken?: string) => {
     if (!refreshToken) throw new ApiError("No refresh token", 400);
 
     const usertoken = await this.prisma.refreshToken.findUnique({
@@ -99,6 +99,7 @@ export class AuthService {
     const payload = {
       id: usertoken.user.id,
       role: usertoken.user.role,
+      email: usertoken.user.email,
     };
 
     const newAccessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
@@ -170,6 +171,7 @@ export class AuthService {
       const payload = {
         id: user.id,
         role: user.role,
+        email: user.email,
       };
 
       const accessToken = jwt.sign(payload, process.env.JWT_SECRET!, {
@@ -193,7 +195,7 @@ export class AuthService {
         },
       });
 
-      const { password, ...usernopass } = user;
+      const { password, role, id, ...usernopass } = user;
       return { user: usernopass, accessToken, refreshToken };
     });
 
@@ -249,7 +251,7 @@ export class AuthService {
         userId: user.id,
       },
     });
-    const { password, ...userWithoutPassword } = user;
+    const { password, role, id, ...userWithoutPassword } = user;
 
     return { userWithoutPassword, accessToken, refreshToken };
   };
@@ -317,5 +319,11 @@ export class AuthService {
     const { password, ...userWithoutPassword } = user;
 
     return { userWithoutPassword, accessToken, refreshToken };
+  };
+
+  logout = async (userId: number) => {
+    await this.prisma.refreshToken.deleteMany({
+      where: { id: userId },
+    });
   };
 }

@@ -4,6 +4,7 @@ import { ApiError } from "../../utils/api-error.js";
 import { cookieOptions } from "../../config/cookie.js";
 import {
   EXPIRED_ACCESS_TOKEN_JWT,
+  EXPIRED_REFRESH_TOKEN_JWT,
   EXPIRED_RESET_TOKEN_JWT,
 } from "./authConstants.js";
 import ms from "ms";
@@ -16,10 +17,9 @@ export class AuthController {
     res.status(200).send(result);
   };
 
-  refreshAccessToken = async (req: Request, res: Response) => {
+  refresh = async (req: Request, res: Response) => {
     const refreshToken = req.cookies.refreshToken;
-    const { accessToken } =
-      await this.authService.refreshAccessToken(refreshToken);
+    const { accessToken } = await this.authService.refresh(refreshToken);
 
     res.cookie("accessToken", accessToken, cookieOptions);
     res.status(200).send({ message: "Access token has been refreshed" });
@@ -53,7 +53,7 @@ export class AuthController {
     });
     res.cookie("refreshToken", refreshToken, {
       ...cookieOptions,
-      maxAge: ms(EXPIRED_RESET_TOKEN_JWT),
+      maxAge: ms(EXPIRED_REFRESH_TOKEN_JWT),
     });
     res.status(200).send(result);
   };
@@ -72,5 +72,18 @@ export class AuthController {
     const { userWithoutPassword, accessToken, refreshToken } =
       await this.authService.googleRegister(req.body);
     res.status(200).send({ user: userWithoutPassword });
+  };
+
+  logout = async (req: Request, res: Response) => {
+    const userId = res.locals.user.id;
+
+    await this.authService.logout(userId);
+    res.clearCookie("accessToken", cookieOptions);
+    res.clearCookie("refreshToken", cookieOptions);
+    res.status(200).send({ message: "successfully logged out" });
+  };
+
+  checkrole = async (req: Request, res: Response) => {
+    res.status(200).send(res.locals.user.role);
   };
 }

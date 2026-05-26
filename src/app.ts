@@ -1,3 +1,4 @@
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { Express } from "express";
 import "reflect-metadata";
@@ -15,6 +16,10 @@ import { AuthService } from "./modules/auth/auth.service.js";
 import { MailService } from "./modules/mail/mail.service.js";
 import { corsOptions } from "./config/cors.js";
 import { AuthMiddleware } from "./middlewares/auth.middleware.js";
+import { UserRouter } from "./modules/user/user.router.js";
+import { UserController } from "./modules/user/user.controller.js";
+import { UserService } from "./modules/user/user.service.js";
+import { CloudinaryService } from "./modules/cloudinary/cloudinary.service.js";
 
 export class App {
   app: Express;
@@ -26,6 +31,7 @@ export class App {
 
   private configure() {
     this.app.use(cors(corsOptions));
+    this.app.use(cookieParser());
     this.app.use(loggerHttp);
     this.app.use(express.json());
     this.registerModules();
@@ -35,20 +41,34 @@ export class App {
   private registerModules() {
     // services
     const mailService = new MailService();
+    const cloudinaryService = new CloudinaryService();
+
     const authService = new AuthService(prisma, mailService);
+    const userService = new UserService(prisma, cloudinaryService, mailService);
 
     // controllers
     const authController = new AuthController(authService);
+    const userController = new UserController(userService);
 
     // middlewares
     const authMiddleware = new AuthMiddleware();
     const validationMiddleware = new ValidationMiddleware();
 
     // routes
-    const router = new AuthRouter(authController, validationMiddleware);
+    const authRouter = new AuthRouter(
+      authController,
+      authMiddleware,
+      validationMiddleware,
+    );
+    const userRouter = new UserRouter(
+      userController,
+      authMiddleware,
+      validationMiddleware,
+    );
 
     // entry point
-    this.app.use("/auth", router.getRouter());
+    this.app.use("/auth", authRouter.getRouter());
+    this.app.use("/user", userRouter.getRouter());
   }
 
   private errorMiddleware() {

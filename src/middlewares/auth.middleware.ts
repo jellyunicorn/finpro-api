@@ -5,16 +5,31 @@ import jwt from "jsonwebtoken";
 
 export class AuthMiddleware {
   verifyToken = (req: Request, res: Response, next: NextFunction) => {
+    let token: string | undefined;
+
+    const authBearerToken = req.headers.authorization?.split(" ")[1];
+    if (authBearerToken) {
+      token = authBearerToken;
+    }
+
+    if (!authBearerToken) {
+      token = req.cookies?.accessToken;
+    }
+
+    if (!token) {
+      throw new ApiError("No Token Provided , Unauthorized Access", 401);
+    }
+
     try {
-      const token = req.cookies?.accessToken;
-      if (!token) {
-        throw new ApiError("Unauthorized", 401);
+      const payload = jwt.verify(token, process.env.JWT_SECRET!);
+      res.locals.user = payload;
+      next();
+    } catch (error) {
+      if (error instanceof jwt.TokenExpiredError) {
+        return next(new ApiError("Token expired", 401));
       }
 
-      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as {
-        id: number;
-        role: string;
-      };
-    } catch (error) {}
+      return next(new ApiError("Token invalid", 401));
+    }
   };
 }

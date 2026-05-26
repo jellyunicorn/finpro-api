@@ -1,14 +1,16 @@
 import { Router } from "express";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { AuthController } from "./auth.controller.js";
-import { loginDTO, registerDTO } from "./dto/auth.dto.js";
-import { createUserDTO } from "./dto/createuser.dto.js";
+import { loginDTO, registerDTO } from "../dto/auth.dto.js";
+import { createUserDTO } from "../dto/createuser.dto.js";
+import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 
 export class AuthRouter {
   private router: Router;
 
   constructor(
     private authController: AuthController,
+    private authMiddleware: AuthMiddleware,
     private validationMiddleware: ValidationMiddleware,
   ) {
     this.router = Router();
@@ -34,7 +36,17 @@ export class AuthRouter {
     this.router.post("/login/google", this.authController.googleLogin);
     this.router.post("/register/google", this.authController.googleRegister);
     this.router.get("/verifyemail", this.authController.verifyEmail);
-    this.router.get("/refresh", this.authController.verifyEmail);
+    this.router.post("/refresh", this.authController.refresh);
+    this.router.post(
+      "/logout",
+      this.authMiddleware.verifyToken,
+      this.authController.logout,
+    );
+    this.router.get(
+      "/me",
+      this.authMiddleware.verifyToken,
+      this.authController.checkrole,
+    );
   };
 
   getRouter = () => {

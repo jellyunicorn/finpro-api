@@ -22,10 +22,12 @@
   "devDependencies": {
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
+    "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/handlebars": "^4.0.40",
     "@types/ms": "^2.1.0",
+    "@types/multer": "^2.1.0",
     "@types/node": "^25.0.5",
     "@types/nodemailer": "^8.0.0",
     "@types/pg": "^8.20.0",
