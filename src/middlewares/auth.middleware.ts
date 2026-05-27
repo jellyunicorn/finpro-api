@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 
 import { ApiError } from "../utils/api-error.js";
 import jwt from "jsonwebtoken";
+import { Role } from "../../generated/prisma/enums.js";
 
 export class AuthMiddleware {
   verifyToken = (req: Request, res: Response, next: NextFunction) => {
@@ -31,5 +32,17 @@ export class AuthMiddleware {
 
       return next(new ApiError("Token invalid", 401));
     }
+  };
+
+  verifyRole = (roles: Role[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+      const userRole = res.locals.user.role;
+
+      if (!userRole || !roles.includes(userRole)) {
+        throw new ApiError("Unauthorized access.", 403);
+      }
+
+      next();
+    };
   };
 }
