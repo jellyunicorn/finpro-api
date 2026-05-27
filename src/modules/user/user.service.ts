@@ -36,6 +36,28 @@ export class UserService {
     return { userdata };
   };
 
+  getUserAddress = async (userid: number) => {
+    const useraddress = await this.prisma.userAddress.findMany({
+      where: { userId: userid, deletedAt: null },
+      select: {
+        id: true,
+        address: true,
+        city: true,
+        postalCode: true,
+        latitude: true,
+        longitude: true,
+        isPrimary: true,
+        userId: true,
+        label: true,
+      },
+    });
+
+    if (!useraddress) {
+      return { message: "no address is found" };
+    }
+    return { useraddress };
+  };
+
   updateUser = async (
     userId: number,
     body: updateUserDTO,

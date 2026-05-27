@@ -25,6 +25,11 @@ export class UserRouter {
       this.authMiddleware.verifyToken,
       this.userController.getUserData,
     );
+    this.router.get(
+      "/address",
+      this.authMiddleware.verifyToken,
+      this.userController.getUserAddress,
+    );
     this.router.post(
       "/resettoken",
       this.authMiddleware.verifyToken,
