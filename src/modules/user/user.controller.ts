@@ -12,6 +12,12 @@ export class UserController {
     res.status(200).send(result);
   };
 
+  getUserAddress = async (req: Request, res: Response) => {
+    const userid = res.locals.user.id;
+    const result = await this.userService.getUserAddress(userid);
+    res.status(200).send(result);
+  };
+
   updateUser = async (req: Request, res: Response) => {
     const userId = res.locals.user.id;
     const body = req.body;
