@@ -25,9 +25,20 @@ export class AttendanceService {
       where: { id: outletId },
       include: {
         employees: {
-          include: {
+          select: {
+            id: true,
+            user: {
+              select: {
+                fullName: true,
+              },
+            },
             attendance: {
               orderBy: { startTime: "desc" },
+              select: {
+                id: true,
+                startTime: true,
+                endTime: true,
+              },
             },
           },
         },
@@ -38,8 +49,11 @@ export class AttendanceService {
       throw new ApiError("Outlet not found", 400);
     }
 
+    // TODO: check if admin supervises outlet or not
+
     return outlet.employees.map((employee) => ({
-      employee,
+      id: employee.id,
+      fullName: employee.user.fullName,
       attendance: employee.attendance,
     }));
   };

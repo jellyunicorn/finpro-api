@@ -16,27 +16,32 @@ export class AttendanceRouter {
 
   private initializedRoutes = () => {
     this.router.get(
-      "/employee",
+      "/",
+      this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER, Role.WORKER]),
       this.attendanceController.getMyAttendanceLog,
     );
     this.router.get(
       "/employee/:id",
+      this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.ADMIN]),
       this.attendanceController.getAttendanceByEmployee,
     );
     this.router.get(
       "/outlet/:id",
+      this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.ADMIN]),
       this.attendanceController.getAttendanceByOutlet,
     );
     this.router.put(
       "/clock-in",
+      this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER, Role.WORKER]),
       this.attendanceController.clockIn,
     );
     this.router.put(
       "/clock-out",
+      this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER, Role.WORKER]),
       this.attendanceController.clockOut,
     );

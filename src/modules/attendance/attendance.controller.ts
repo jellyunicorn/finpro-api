@@ -23,6 +23,7 @@ export class AttendanceController {
   };
 
   clockIn = async (req: Request, res: Response) => {
+    console.log(res.locals);
     const id = Number(res.locals.user.id);
     const result = await this.attendanceService.clockIn(id);
     res.status(200).send(result);
