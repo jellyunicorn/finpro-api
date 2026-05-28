@@ -17,7 +17,7 @@ export class AttendanceController {
   };
 
   getAttendanceByOutlet = async (req: Request, res: Response) => {
-    const id = Number(req.params.id);
+    const id = Number(res.locals.user.id);
     const result = await this.attendanceService.getAttendanceByOutlet(id);
     res.status(200).send(result);
   };

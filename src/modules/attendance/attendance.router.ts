@@ -28,7 +28,7 @@ export class AttendanceRouter {
       this.attendanceController.getAttendanceByEmployee,
     );
     this.router.get(
-      "/outlet/:id",
+      "/outlet",
       this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.ADMIN]),
       this.attendanceController.getAttendanceByOutlet,

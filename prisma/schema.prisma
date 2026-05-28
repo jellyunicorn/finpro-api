@@ -253,6 +253,7 @@ enum Provider {
 enum EmployeeType {
   WORKER
   DRIVER
+  ADMIN
 }
 
 enum OrderStatus {

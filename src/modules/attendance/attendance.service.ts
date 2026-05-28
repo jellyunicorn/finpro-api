@@ -1,4 +1,7 @@
-import { PrismaClient } from "../../../generated/prisma/client.js";
+import {
+  EmployeeType,
+  PrismaClient,
+} from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
 
 export class AttendanceService {
@@ -20,11 +23,28 @@ export class AttendanceService {
     return attendances;
   };
 
-  getAttendanceByOutlet = async (outletId: number) => {
+  getAttendanceByOutlet = async (userId: number) => {
+    console.log(userId);
+
+    const admin = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+
+    if (!admin) {
+      throw new ApiError("Outlet admin does not exist", 400);
+    }
+
+    if (admin.type != EmployeeType.ADMIN) {
+      throw new ApiError("Unauthorized access", 400);
+    }
+
     const outlet = await this.prisma.outlet.findUnique({
-      where: { id: outletId },
+      where: { id: admin.outletId },
       include: {
         employees: {
+          where: {
+            NOT: { type: EmployeeType.ADMIN },
+          },
           select: {
             id: true,
             user: {
@@ -48,8 +68,6 @@ export class AttendanceService {
     if (!outlet) {
       throw new ApiError("Outlet not found", 400);
     }
-
-    // TODO: check if admin supervises outlet or not
 
     return outlet.employees.map((employee) => ({
       id: employee.id,
