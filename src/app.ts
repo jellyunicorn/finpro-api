@@ -23,6 +23,9 @@ import { CloudinaryService } from "./modules/cloudinary/cloudinary.service.js";
 import { AddressService } from "./modules/address/address.service.js";
 import { AddressController } from "./modules/address/address.controller.js";
 import { AddressRouter } from "./modules/address/address.router.js";
+import { AttendanceService } from "./modules/attendance/attendance.service.js";
+import { AttendanceController } from "./modules/attendance/attendance.controller.js";
+import { AttendanceRouter } from "./modules/attendance/attendance.router.js";
 
 export class App {
   app: Express;
@@ -49,11 +52,13 @@ export class App {
     const authService = new AuthService(prisma, mailService);
     const addressService = new AddressService(prisma);
     const userService = new UserService(prisma, cloudinaryService, mailService);
+    const attendanceService = new AttendanceService(prisma);
 
     // controllers
     const authController = new AuthController(authService);
     const addressController = new AddressController(addressService);
     const userController = new UserController(userService);
+    const attendanceController = new AttendanceController(attendanceService);
 
     // middlewares
     const authMiddleware = new AuthMiddleware();
@@ -76,10 +81,16 @@ export class App {
       validationMiddleware,
     );
 
+    const attendanceRouter = new AttendanceRouter(
+      attendanceController,
+      authMiddleware,
+    );
+
     // entry point
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/user", userRouter.getRouter());
     this.app.use("/address", addressRouter.getRouter());
+    this.app.use("/attendance", attendanceRouter.getRouter());
   }
 
   private errorMiddleware() {
