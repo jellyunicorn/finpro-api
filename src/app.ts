@@ -20,6 +20,9 @@ import { UserRouter } from "./modules/user/user.router.js";
 import { UserController } from "./modules/user/user.controller.js";
 import { UserService } from "./modules/user/user.service.js";
 import { CloudinaryService } from "./modules/cloudinary/cloudinary.service.js";
+import { AddressService } from "./modules/address/address.service.js";
+import { AddressController } from "./modules/address/address.controller.js";
+import { AddressRouter } from "./modules/address/address.router.js";
 
 export class App {
   app: Express;
@@ -44,10 +47,12 @@ export class App {
     const cloudinaryService = new CloudinaryService();
 
     const authService = new AuthService(prisma, mailService);
+    const addressService = new AddressService(prisma);
     const userService = new UserService(prisma, cloudinaryService, mailService);
 
     // controllers
     const authController = new AuthController(authService);
+    const addressController = new AddressController(addressService);
     const userController = new UserController(userService);
 
     // middlewares
@@ -65,10 +70,16 @@ export class App {
       authMiddleware,
       validationMiddleware,
     );
+    const addressRouter = new AddressRouter(
+      addressController,
+      authMiddleware,
+      validationMiddleware,
+    );
 
     // entry point
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/user", userRouter.getRouter());
+    this.app.use("/address", addressRouter.getRouter());
   }
 
   private errorMiddleware() {
