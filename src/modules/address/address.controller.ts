@@ -15,6 +15,13 @@ export class AddressController {
     const result = await this.addressService.createAddress(userid, req.body);
     res.status(201).send(result);
   };
+  deleteAddress = async (req: Request, res: Response) => {
+    const selectedid = req.body.id;
+    const userid = res.locals.user.id;
+
+    const result = await this.addressService.deleteAddress(selectedid, userid);
+    res.status(201).send(result);
+  };
 
   updateAddressDetail = async (req: Request, res: Response) => {
     const userid = res.locals.user.id;

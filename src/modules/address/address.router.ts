@@ -36,6 +36,11 @@ export class AddressRouter {
       this.authMiddleware.verifyToken,
       this.addressController.updateAddressDetail,
     );
+    this.router.patch(
+      "/delete",
+      this.authMiddleware.verifyToken,
+      this.addressController.deleteAddress,
+    );
   };
 
   getRouter = () => {

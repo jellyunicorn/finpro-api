@@ -1,4 +1,5 @@
 import { PrismaClient } from "../../../generated/prisma/client.js";
+import { ApiError } from "../../utils/api-error.js";
 import { CloudinaryService } from "../cloudinary/cloudinary.service.js";
 import { MailService } from "../mail/mail.service.js";
 
@@ -56,7 +57,17 @@ export class AddressService {
     return { created };
   };
 
-  getAddressDetail = async (userid: number) => {};
+  deleteAddress = async (selectedid: number, userid: number) => {
+    const address = await this.prisma.userAddress.findUnique({
+      where: { id: selectedid },
+    });
+    if (!address || address.deletedAt !== null || address.userId !== userid)
+      throw new ApiError("No Address is found", 400);
+    await this.prisma.userAddress.update({
+      where: { id: selectedid },
+      data: { deletedAt: new Date() },
+    });
+  };
 
   updateAddressDetail = async (
     userid: number,
