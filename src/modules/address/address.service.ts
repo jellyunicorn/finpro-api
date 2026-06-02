@@ -119,4 +119,21 @@ export class AddressService {
 
     return { message: "new primary addres is :", result };
   };
+
+  getOutletAddresses = async () => {
+    const outlets = await this.prisma.outlet.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        city: true,
+        postalCode: true,
+        latitude: true,
+        longitude: true,
+      },
+    });
+
+    return { outlets };
+  };
 }

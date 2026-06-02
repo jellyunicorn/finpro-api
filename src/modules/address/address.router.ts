@@ -21,6 +21,11 @@ export class AddressRouter {
       this.authMiddleware.verifyToken,
       this.addressController.getUserAddress,
     );
+    this.router.get(
+      "/outlets",
+      // this.authMiddleware.verifyToken,
+      this.addressController.getOutletAddresses,
+    );
     this.router.post(
       "/create",
       this.authMiddleware.verifyToken,
