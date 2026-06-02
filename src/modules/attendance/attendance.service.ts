@@ -85,19 +85,19 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 400);
     }
 
-    const activeSession = await this.prisma.attendance.findFirst({
-      where: { employeeId: employee.id, endTime: null },
-    });
+    // const activeSession = await this.prisma.attendance.findFirst({
+    //   where: { employeeId: employee.id, endTime: null },
+    // });
 
-    if (activeSession) {
-      throw new ApiError("Employee is already clocked in", 400);
-    }
+    // if (activeSession) {
+    //   throw new ApiError("Employee is already clocked in", 400);
+    // }
 
-    await this.prisma.attendance.create({
-      data: {
-        employeeId: employee.id,
-      },
-    });
+    // await this.prisma.attendance.create({
+    //   data: {
+    //     employeeId: employee.id,
+    //   },
+    // });
 
     return { message: "Attendance clock-in successful" };
   };
@@ -111,28 +111,28 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 400);
     }
 
-    const activeSession = await this.prisma.attendance.findFirst({
-      where: {
-        employeeId: employee.id,
-        endTime: null,
-      },
-      orderBy: {
-        startTime: "desc",
-      },
-    });
+    // const activeSession = await this.prisma.attendance.findFirst({
+    //   where: {
+    //     employeeId: employee.id,
+    //     endTime: null,
+    //   },
+    //   orderBy: {
+    //     startTime: "desc",
+    //   },
+    // });
 
-    if (!activeSession) {
-      throw new ApiError("Employee is not clocked in", 400);
-    }
+    // if (!activeSession) {
+    //   throw new ApiError("Employee is not clocked in", 400);
+    // }
 
-    await this.prisma.attendance.update({
-      where: {
-        id: activeSession.id,
-      },
-      data: {
-        endTime: new Date(),
-      },
-    });
+    // await this.prisma.attendance.update({
+    //   where: {
+    //     id: activeSession.id,
+    //   },
+    //   data: {
+    //     endTime: new Date(),
+    //   },
+    // });
 
     return { message: "Attendance clock-out successful" };
   };
