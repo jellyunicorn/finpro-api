@@ -11,8 +11,39 @@ type neworder = {
 export class OrderServices {
   constructor(private prisma: PrismaClient) {}
 
-  getOrders = async (id: number) => {
-    return await this.prisma.order.findMany({ where: { userId: id } });
+  getOrders = async (
+    id: number,
+    searchQuery: string | undefined,
+    monthQuery: number,
+    dateQuery: number,
+  ) => {
+    const where: any = { userId: id, deletedAt: null };
+
+    const year = new Date().getFullYear();
+    if (monthQuery && dateQuery) {
+      const start = new Date(year, monthQuery - 1, dateQuery);
+      const end = new Date(year, monthQuery - 1, dateQuery + 1);
+      where.createdAt = { gte: start, lt: end };
+    } else if (monthQuery) {
+      const start = new Date(year, monthQuery - 1, 1);
+      const end = new Date(year, monthQuery, 1);
+      where.createdAt = { gte: start, lt: end };
+    } else if (dateQuery) {
+      const month = new Date().getMonth();
+      const start = new Date(year, month, dateQuery);
+      const end = new Date(year, month, dateQuery + 1);
+      where.createdAt = { gte: start, lt: end };
+    }
+
+    if (searchQuery) {
+      where.orderId = { contains: searchQuery, mode: "insensitive" };
+    }
+
+    return await this.prisma.order.findMany({
+      where,
+      include: { outlet: true, address: true },
+      orderBy: { createdAt: "desc" },
+    });
   };
 
   addNewOrder = async (body: neworder, id: number) => {
@@ -32,7 +63,7 @@ export class OrderServices {
     const res = await this.prisma.order.create({
       data: {
         scheduledTime: new Date(`${body.pickupDate}T${body.pickupTime}`),
-        orderStatus: "WAITING_FOR_PAYMENT",
+        orderStatus: "PENDING",
         deliveryCost: 0,
         paymentStatus: "PENDING",
         distance: body.distance,

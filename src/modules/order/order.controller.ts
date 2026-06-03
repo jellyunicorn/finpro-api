@@ -7,7 +7,15 @@ export class OrderController {
 
   getOrders = async (req: Request, res: Response) => {
     const id = res.locals.user.id;
-    const result = await this.orderService.getOrders(id);
+    const searchQuery = req.query.search as string | undefined;
+    const monthQuery = Number(req.query.month) || 0;
+    const dateQuery = Number(req.query.date) || 0;
+    const result = await this.orderService.getOrders(
+      id,
+      searchQuery,
+      monthQuery,
+      dateQuery,
+    );
     res.status(200).send(result);
   };
   addNewOrder = async (req: Request, res: Response) => {
