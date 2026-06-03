@@ -8,25 +8,25 @@ datasource db {
 }
 
 model User {
-  id            Int            @id @default(autoincrement())
-  email         String         @unique
+  id            Int                    @id @default(autoincrement())
+  email         String                 @unique
   password      String?
-  birthDate     DateTime?      @map("birth_date")
+  birthDate     DateTime?              @map("birth_date")
   phone         String?
-  role          Role           @default(USER)
+  role          Role                   @default(USER)
   avatar        String?
-  fullName      String         @map("full_name")
-  provider      Provider       @default(CREDENTIALS)
-  verifiedAt    DateTime?      @map("verified_at")
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-  deletedAt     DateTime?      @map("deleted_at")
+  fullName      String                 @map("full_name")
+  provider      Provider               @default(CREDENTIALS)
+  verifiedAt    DateTime?              @map("verified_at")
+  createdAt     DateTime               @default(now()) @map("created_at")
+  updatedAt     DateTime               @updatedAt @map("updated_at")
+  deletedAt     DateTime?              @map("deleted_at")
   employee      Employee?
   address       UserAddress[]
   orders        Order[]
-  notifications Notification[]
   complaints    Complaint[]
   refreshToken  RefreshToken?
+  notifications NotificationsOnUsers[]
 
   @@map("users")
 }
@@ -204,10 +204,21 @@ model Notification {
   body      String
   createdAt DateTime @default(now()) @map("created_at")
 
-  userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id])
+  users NotificationsOnUsers[]
 
   @@map("notifications")
+}
+
+model NotificationsOnUsers {
+  userId         Int
+  user           User         @relation(fields: [userId], references: [id])
+  notificationId Int
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  readAt         DateTime?
+  deletedAt      DateTime?
+
+  @@id([userId, notificationId])
+  @@map("user_notifications")
 }
 
 model Complaint {
