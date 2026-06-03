@@ -26,6 +26,9 @@ import { AddressRouter } from "./modules/address/address.router.js";
 import { AttendanceService } from "./modules/attendance/attendance.service.js";
 import { AttendanceController } from "./modules/attendance/attendance.controller.js";
 import { AttendanceRouter } from "./modules/attendance/attendance.router.js";
+import { OrderRouter } from "./modules/order/order.router.js";
+import { OrderController } from "./modules/order/order.controller.js";
+import { OrderServices } from "./modules/order/order.service.js";
 
 export class App {
   app: Express;
@@ -52,12 +55,14 @@ export class App {
     const authService = new AuthService(prisma, mailService);
     const addressService = new AddressService(prisma);
     const userService = new UserService(prisma, cloudinaryService, mailService);
+    const orderService = new OrderServices(prisma);
     const attendanceService = new AttendanceService(prisma);
 
     // controllers
     const authController = new AuthController(authService);
     const addressController = new AddressController(addressService);
     const userController = new UserController(userService);
+    const orderController = new OrderController(orderService);
     const attendanceController = new AttendanceController(attendanceService);
 
     // middlewares
@@ -85,12 +90,18 @@ export class App {
       attendanceController,
       authMiddleware,
     );
+    const orderRouter = new OrderRouter(
+      orderController,
+      validationMiddleware,
+      authMiddleware,
+    );
 
     // entry point
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/user", userRouter.getRouter());
     this.app.use("/address", addressRouter.getRouter());
     this.app.use("/attendance", attendanceRouter.getRouter());
+    this.app.use("/order", orderRouter.getRouter());
   }
 
   private errorMiddleware() {

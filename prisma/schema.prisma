@@ -32,13 +32,12 @@ model User {
 }
 
 model Employee {
-  id        Int          @id @default(autoincrement())
-  type      EmployeeType
-  salary    Int?
-  createdAt DateTime     @default(now()) @map("created_at")
-  updatedAt DateTime     @updatedAt @map("updated_at")
-  deletedAt DateTime?    @map("deleted_at")
-
+  id              Int             @id @default(autoincrement())
+  type            EmployeeType
+  salary          Int?
+  createdAt       DateTime        @default(now()) @map("created_at")
+  updatedAt       DateTime        @updatedAt @map("updated_at")
+  deletedAt       DateTime?       @map("deleted_at")
   user            User            @relation(fields: [userId], references: [id])
   userId          Int             @unique @map("user_id")
   outlet          Outlet          @relation(fields: [outletId], references: [id])
@@ -78,8 +77,9 @@ model UserAddress {
   updatedAt  DateTime  @updatedAt @map("updated_at")
   deletedAt  DateTime? @map("deleted_at")
 
-  userId Int  @map("user_id")
-  user   User @relation(fields: [userId], references: [id])
+  userId Int     @map("user_id")
+  user   User    @relation(fields: [userId], references: [id])
+  orders Order[]
 
   @@map("user_addresses")
 }
@@ -104,25 +104,28 @@ model Outlet {
 }
 
 model Order {
-  id            Int           @id @default(autoincrement())
-  scheduledTime DateTime      @map("scheduled_time")
-  pickupTime    DateTime      @map("pickup_time")
-  orderStatus   OrderStatus   @map("order_status")
-  deliveryCost  Int           @map("delivery_cost")
-  paymentStatus PaymentStatus @map("payment_status")
-  paymentMethod PaymentMethod @map("payment_method")
-  paymentTime   DateTime      @map("payment_time")
+  id            Int            @id @default(autoincrement())
+  orderId       String         @unique @default(cuid()) @map("order_id")
+  scheduledTime DateTime       @map("scheduled_time")
+  pickupTime    DateTime?      @map("pickup_time")
+  orderStatus   OrderStatus    @map("order_status")
+  deliveryCost  Int            @map("delivery_cost")
+  paymentStatus PaymentStatus  @map("payment_status")
+  paymentMethod PaymentMethod? @map("payment_method")
+  paymentTime   DateTime?      @map("payment_time")
   distance      Decimal
-  confirmedAt   DateTime      @map("confirmed_at")
-  deliveredAt   DateTime      @map("delivered_at")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-  deletedAt     DateTime?     @map("deleted_at")
+  confirmedAt   DateTime?      @map("confirmed_at")
+  deliveredAt   DateTime?      @map("delivered_at")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  deletedAt     DateTime?      @map("deleted_at")
 
   userId     Int         @map("user_id")
   user       User        @relation(fields: [userId], references: [id])
   outletId   Int         @map("outlet_id")
   outlet     Outlet      @relation(fields: [outletId], references: [id])
+  addressId  Int?         @map("address_id")
+  address    UserAddress? @relation(fields: [addressId], references: [id])
   orderItems OrderItem[]
   complaints Complaint[]
 
