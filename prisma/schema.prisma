@@ -120,10 +120,10 @@ model Order {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   deletedAt     DateTime?      @map("deleted_at")
 
-  userId     Int         @map("user_id")
-  user       User        @relation(fields: [userId], references: [id])
-  outletId   Int         @map("outlet_id")
-  outlet     Outlet      @relation(fields: [outletId], references: [id])
+  userId     Int          @map("user_id")
+  user       User         @relation(fields: [userId], references: [id])
+  outletId   Int          @map("outlet_id")
+  outlet     Outlet       @relation(fields: [outletId], references: [id])
   addressId  Int?         @map("address_id")
   address    UserAddress? @relation(fields: [addressId], references: [id])
   orderItems OrderItem[]
@@ -136,6 +136,7 @@ model OrderItem {
   id          Int       @id @default(autoincrement())
   name        String
   quantity    Int
+  weight      Int       @default(0)
   price       Int
   description String
   createdAt   DateTime  @default(now()) @map("created_at")
