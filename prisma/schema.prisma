@@ -119,7 +119,7 @@ model Order {
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
   deletedAt       DateTime?      @map("deleted_at")
-  xenditSessionId String         @map("xendit_session_id")
+  xenditSessionId String?         @map("xendit_session_id")
 
   userId     Int          @map("user_id")
   user       User         @relation(fields: [userId], references: [id])
