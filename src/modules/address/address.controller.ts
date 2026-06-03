@@ -10,6 +10,10 @@ export class AddressController {
     const result = await this.addressService.getUserAddress(userid);
     res.status(200).send(result);
   };
+  getOutletAddresses = async (req: Request, res: Response) => {
+    const result = await this.addressService.getOutletAddresses();
+    res.status(200).send(result);
+  };
   createAddress = async (req: Request, res: Response) => {
     const userid = res.locals.user.id;
     const result = await this.addressService.createAddress(userid, req.body);
