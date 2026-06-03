@@ -2,8 +2,6 @@ import { Router } from "express";
 import { Role } from "../../../generated/prisma/enums.js";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 import { AttendanceController } from "./attendance.controller.js";
-import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
-import { GetEmployeeAttendanceDTO } from "./dto/getEmployeeAttendance.dto.js";
 
 export class AttendanceRouter {
   private router: Router;
