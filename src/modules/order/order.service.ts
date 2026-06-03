@@ -1,9 +1,12 @@
-import { PrismaClient } from "../../../generated/prisma/client.js";
+import {
+  EmployeeType,
+  PrismaClient,
+} from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
 
 type neworder = {
-  pickupaddressid: number;
-  outletid: number;
+  pickupAddressId: number;
+  outletId: number;
   pickupDate: string;
   pickupTime: string;
   distance: number;
@@ -48,7 +51,7 @@ export class OrderServices {
 
   addNewOrder = async (body: neworder, id: number) => {
     const checkoutlet = await this.prisma.outlet.findUnique({
-      where: { id: body.outletid },
+      where: { id: body.outletId },
     });
 
     if (!checkoutlet) {
@@ -56,25 +59,51 @@ export class OrderServices {
     }
 
     const address = await this.prisma.userAddress.findFirst({
-      where: { id: body.pickupaddressid, userId: id, deletedAt: null },
+      where: { id: body.pickupAddressId, userId: id, deletedAt: null },
     });
 
     if (!address) throw new ApiError("Pickup address not found", 404);
 
-    const res = await this.prisma.order.create({
-      data: {
-        scheduledTime: new Date(`${body.pickupDate}T${body.pickupTime}`),
-        orderStatus: "PENDING",
-        deliveryCost: 0,
-        paymentStatus: "PENDING",
-        distance: body.distance,
-        userId: id,
-        outletId: body.outletid,
-        addressId: body.pickupaddressid,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      const order = await tx.order.create({
+        data: {
+          scheduledTime: new Date(`${body.pickupDate}T${body.pickupTime}`),
+          orderStatus: "PENDING",
+          deliveryCost: 0,
+          paymentStatus: "PENDING",
+          distance: body.distance,
+          userId: id,
+          outletId: body.outletId,
+          addressId: body.pickupAddressId,
+        },
+      });
+
+      const driverNotification = await tx.notification.create({
+        data: {
+          title: "New Order Created",
+          body: `Order #${order.orderId} ready for pickup`,
+        },
+      });
+
+      const drivers = await tx.employee.findMany({
+        where: {
+          outletId: body.outletId,
+          type: EmployeeType.DRIVER,
+        },
+        select: {
+          userId: true,
+        },
+      });
+
+      await tx.notificationsOnUsers.createMany({
+        data: drivers.map((driver) => ({
+          userId: driver.userId,
+          notificationId: driverNotification.id,
+        })),
+      });
     });
 
-    return { message: "new order created" };
+    return { message: "New order created" };
   };
 
   getOrderItems = async (orderId: string, userId: number) => {
