@@ -22,11 +22,23 @@ export class OrderRouter {
       this.authMiddleware.verifyToken,
       this.orderController.getOrders,
     );
+
     this.router.post(
       "/new",
       this.authMiddleware.verifyToken,
       this.validationMiddleware.validateBody(createOrderDTO),
       this.orderController.addNewOrder,
+    );
+
+    this.router.get(
+      "/:orderid",
+      this.authMiddleware.verifyToken,
+      this.orderController.getOrderDetail,
+    );
+    this.router.get(
+      "/:orderid/items",
+      this.authMiddleware.verifyToken,
+      this.orderController.getOrderItems,
     );
   };
 

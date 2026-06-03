@@ -75,4 +75,29 @@ export class OrderServices {
 
     return { message: "new order created" };
   };
+
+  getOrderItems = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+    const orderid = order.id;
+    return await this.prisma.orderItem.findMany({
+      where: { orderId: orderid },
+    });
+  };
+
+  getOrderDetail = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+
+    return await this.prisma.order.findUnique({
+      where: { orderId },
+      include: { outlet: true, address: true, orderItems: true },
+    });
+  };
 }
