@@ -1,5 +1,8 @@
 import { Request, Response } from "express";
 import { DriverService } from "./driver.service.js";
+import { plainToInstance } from "class-transformer";
+import { GetPickupHistoryDTO } from "./dto/getPickupHistory.dto.js";
+import { GetDeliveryHistoryDTO } from "./dto/getDeliveryHistory.dto.js";
 
 export class DriverController {
   constructor(private driverService: DriverService) {}
@@ -10,9 +13,23 @@ export class DriverController {
     res.status(200).send(result);
   };
 
-  getRequestHistory = async (req: Request, res: Response) => {
-    const id = Number(res.locals.user.id);
-    const result = await this.driverService.getRequestHistory(id);
+  getPickupHistory = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const query = plainToInstance(GetPickupHistoryDTO, {
+      ...req.query,
+      userId,
+    });
+    const result = await this.driverService.getPickupHistory(query);
+    res.status(200).send(result);
+  };
+
+  getDeliveryHistory = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const query = plainToInstance(GetDeliveryHistoryDTO, {
+      ...req.query,
+      userId,
+    });
+    const result = await this.driverService.getDeliveryHistory(query);
     res.status(200).send(result);
   };
 

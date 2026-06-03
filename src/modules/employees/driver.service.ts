@@ -5,6 +5,8 @@ import {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { GetDeliveryHistoryDTO } from "./dto/getDeliveryHistory.dto.js";
+import { GetPickupHistoryDTO } from "./dto/getPickupHistory.dto.js";
 
 export class DriverService {
   constructor(private prisma: PrismaClient) {}
@@ -79,10 +81,16 @@ export class DriverService {
     throw new ApiError("No active requests found", 404);
   };
 
-  getRequestHistory = async (driverId: number) => {
+  getPickupHistory = async ({
+    userId,
+    page,
+    take,
+    sortBy,
+    sortOrder,
+  }: GetPickupHistoryDTO) => {
     const driver = await this.prisma.employee.findUnique({
       where: {
-        id: driverId,
+        userId,
       },
     });
 
@@ -90,19 +98,53 @@ export class DriverService {
       throw new ApiError("Driver not found", 404);
     }
 
+    const whereClause = { driverId: driver.id };
+
     const pickups = await this.prisma.orderPickup.findMany({
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
+    });
+
+    const total = await this.prisma.orderPickup.count({
+      where: whereClause,
+    });
+
+    return { data: pickups, meta: { page, take, total } };
+  };
+
+  getDeliveryHistory = async ({
+    userId,
+    page,
+    take,
+    sortBy,
+    sortOrder,
+  }: GetDeliveryHistoryDTO) => {
+    const driver = await this.prisma.employee.findUnique({
       where: {
-        driverId,
+        userId,
       },
     });
+
+    if (!driver || driver.type !== EmployeeType.DRIVER) {
+      throw new ApiError("Driver not found", 404);
+    }
+
+    const whereClause = { driverId: driver.id };
 
     const deliveries = await this.prisma.orderDelivery.findMany({
-      where: {
-        driverId,
-      },
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
     });
 
-    return { pickups, deliveries };
+    const total = await this.prisma.orderPickup.count({
+      where: whereClause,
+    });
+
+    return { data: deliveries, meta: { page, take, total } };
   };
 
   assignPickup = async (driverId: number, pickupId: number) => {

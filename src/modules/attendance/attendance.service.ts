@@ -4,7 +4,7 @@ import {
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
 import { GetEmployeeAttendanceDTO } from "./dto/getEmployeeAttendance.dto.js";
-import { GetOutletAttendanceLogDTO } from "./dto/getOutletAttendanceLog.js";
+import { GetOutletAttendanceLogDTO } from "./dto/getOutletAttendanceLog.dto.js";
 
 export class AttendanceService {
   constructor(private prisma: PrismaClient) {}
@@ -24,15 +24,17 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 400);
     }
 
+    const whereClause = { employeeId: employee.id };
+
     const attendances = await this.prisma.attendance.findMany({
-      where: { employeeId: employee.id },
+      where: whereClause,
       take,
       skip: (page - 1) * take,
       orderBy: { [sortBy]: sortOrder },
     });
 
     const total = await this.prisma.attendance.count({
-      where: { employeeId: employee.id },
+      where: whereClause,
     });
 
     return { data: attendances, meta: { page, take, total } };

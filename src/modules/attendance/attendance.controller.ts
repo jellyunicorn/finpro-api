@@ -2,7 +2,7 @@ import { Request, Response } from "express";
 import { AttendanceService } from "./attendance.service.js";
 import { plainToInstance } from "class-transformer";
 import { GetEmployeeAttendanceDTO } from "./dto/getEmployeeAttendance.dto.js";
-import { GetOutletAttendanceLogDTO } from "./dto/getOutletAttendanceLog.js";
+import { GetOutletAttendanceLogDTO } from "./dto/getOutletAttendanceLog.dto.js";
 
 export class AttendanceController {
   constructor(private attendanceService: AttendanceService) {}
