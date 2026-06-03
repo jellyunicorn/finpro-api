@@ -104,8 +104,14 @@ export class AttendanceService {
     });
 
     if (!employee) {
-      throw new ApiError("Employee does not exist", 400);
+      throw new ApiError("Employee does not exist", 404);
     }
+
+    await this.prisma.attendance.create({
+      data: {
+        employeeId: employee.id,
+      },
+    });
 
     return { message: "Attendance clock-in successful" };
   };
@@ -116,8 +122,31 @@ export class AttendanceService {
     });
 
     if (!employee) {
-      throw new ApiError("Employee does not exist", 400);
+      throw new ApiError("Employee does not exist", 404);
     }
+
+    const latestAttendance = await this.prisma.attendance.findFirst({
+      where: {
+        employeeId: employee.id,
+        endTime: null,
+      },
+      orderBy: {
+        startTime: "desc",
+      },
+    });
+
+    if (!latestAttendance) {
+      throw new ApiError("Employee is not clocked in", 400);
+    }
+
+    await this.prisma.attendance.update({
+      where: {
+        id: latestAttendance.id,
+      },
+      data: {
+        endTime: new Date(),
+      },
+    });
 
     return { message: "Attendance clock-out successful" };
   };
