@@ -1,0 +1,67 @@
+import axios from "axios";
+import { PrismaClient } from "../../../generated/prisma/client.js";
+import { ApiError } from "../../utils/api-error.js";
+
+export class PaymentService {
+  private auth: string;
+
+  constructor(private prisma: PrismaClient) {
+    this.auth =
+      "Basic " +
+      Buffer.from(process.env.XENDIT_SECRET_KEY + ":").toString("base64");
+  }
+
+  createPaymentSession = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+
+    if (order.paymentStatus === "SUCCESS")
+      throw new ApiError("Order already paid", 400);
+
+    const orderid = order.id;
+    const items = await this.prisma.orderItem.findMany({
+      where: { orderId: orderid, deletedAt: null },
+      select: {
+        price: true,
+        quantity: true,
+      },
+    });
+
+    let amount: number = 0;
+
+    items.forEach((e) => {
+      const subtotal = e.price * e.quantity;
+      amount = amount + subtotal;
+    });
+
+    const res = await fetch("https://api.xendit.co/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: this.auth },
+      body: JSON.stringify({
+        reference_id: orderId,
+        session_type: "PAY",
+        mode: "PAYMENT_LINK",
+        currency: "IDR",
+        amount,
+        country: "ID",
+        success_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}/success`,
+        failure_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}/failed`,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new ApiError(`Xendit error: ${await res.text()}`, res.status);
+    }
+    const { payment_link_url, payment_session_id } = await res.json();
+
+    return {
+      url: payment_link_url,
+      sessionId: payment_session_id,
+    };
+  };
+
+  handleXenditWebhook = async () => {};
+}

@@ -36,6 +36,11 @@ export class OrderRouter {
       this.orderController.getOrderDetail,
     );
     this.router.get(
+      "/:orderid/total",
+      this.authMiddleware.verifyToken,
+      this.orderController.getOrderItemsTotal,
+    );
+    this.router.get(
       "/:orderid/items",
       this.authMiddleware.verifyToken,
       this.orderController.getOrderItems,

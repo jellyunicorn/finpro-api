@@ -84,8 +84,42 @@ export class OrderServices {
     if (!order) throw new ApiError("Order not found", 404);
     const orderid = order.id;
     return await this.prisma.orderItem.findMany({
-      where: { orderId: orderid },
+      where: { orderId: orderid, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        orderId: true,
+        price: true,
+        quantity: true,
+        weight: true,
+        description: true,
+      },
     });
+  };
+
+  getOrderItemsTotal = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+    const orderid = order.id;
+    const items = await this.prisma.orderItem.findMany({
+      where: { orderId: orderid, deletedAt: null },
+      select: {
+        price: true,
+        quantity: true,
+      },
+    });
+
+    let total: number = 0;
+
+    items.forEach((e) => {
+      const subtotal = e.price * e.quantity;
+      total = total + subtotal;
+    });
+
+    return { total };
   };
 
   getOrderDetail = async (orderId: string, userId: number) => {

@@ -30,6 +30,12 @@ export class OrderController {
     const result = await this.orderService.getOrderItems(orderId, userId);
     res.status(200).send(result);
   };
+  getOrderItemsTotal = async (req: Request, res: Response) => {
+    const userId = res.locals.user.id;
+    const orderId = req.params.orderid;
+    const result = await this.orderService.getOrderItemsTotal(orderId, userId);
+    res.status(200).send(result);
+  };
   getOrderDetail = async (req: Request, res: Response) => {
     const userId = res.locals.user.id;
     const orderId = req.params.orderid;

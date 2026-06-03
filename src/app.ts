@@ -29,6 +29,9 @@ import { AttendanceRouter } from "./modules/attendance/attendance.router.js";
 import { OrderRouter } from "./modules/order/order.router.js";
 import { OrderController } from "./modules/order/order.controller.js";
 import { OrderServices } from "./modules/order/order.service.js";
+import { PaymentService } from "./modules/payment/payment.service.js";
+import { PaymentController } from "./modules/payment/payment.controller.js";
+import { PaymentRouter } from "./modules/payment/payment.router.js";
 
 export class App {
   app: Express;
@@ -55,10 +58,12 @@ export class App {
     const authService = new AuthService(prisma, mailService);
     const addressService = new AddressService(prisma);
     const userService = new UserService(prisma, cloudinaryService, mailService);
+    const paymentService = new PaymentService(prisma);
     const orderService = new OrderServices(prisma);
     const attendanceService = new AttendanceService(prisma);
 
     // controllers
+    const paymentController = new PaymentController(paymentService);
     const authController = new AuthController(authService);
     const addressController = new AddressController(addressService);
     const userController = new UserController(userService);
@@ -95,12 +100,18 @@ export class App {
       validationMiddleware,
       authMiddleware,
     );
+    const paymentRouter = new PaymentRouter(
+      paymentController,
+      authMiddleware,
+      validationMiddleware,
+    );
 
     // entry point
     this.app.use("/auth", authRouter.getRouter());
     this.app.use("/user", userRouter.getRouter());
     this.app.use("/address", addressRouter.getRouter());
     this.app.use("/attendance", attendanceRouter.getRouter());
+    this.app.use("/payment", paymentRouter.getRouter());
     this.app.use("/order", orderRouter.getRouter());
   }
 
