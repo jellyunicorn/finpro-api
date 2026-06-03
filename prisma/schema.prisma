@@ -301,6 +301,7 @@ enum PaymentMethod {
   GOPAY
   DANA
   XENDIT
+  BCA_VIRTUAL_ACCOUNT
 }
 
 enum Station {

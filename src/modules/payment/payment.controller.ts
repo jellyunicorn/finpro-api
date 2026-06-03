@@ -13,4 +13,19 @@ export class PaymentController {
     );
     res.status(200).send(result);
   };
+
+  handleXenditWebhook = async (req: Request, res: Response) => {
+    const token = req.header("x-callback-token");
+    if (token !== process.env.XENDIT_WEBHOOK_TOKEN) {
+      return res.status(401).end();
+    }
+
+    res.status(200).end();
+
+    try {
+      await this.paymentService.handleXenditWebhook(req.body);
+    } catch (err) {
+      console.error("Xendit webhook processing failed:", err);
+    }
+  };
 }

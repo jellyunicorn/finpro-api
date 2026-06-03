@@ -47,8 +47,8 @@ export class PaymentService {
         currency: "IDR",
         amount,
         country: "ID",
-        success_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}/success`,
-        failure_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}/failed`,
+        success_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}&success`,
+        failure_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}&failed`,
       }),
     });
 
@@ -57,11 +57,43 @@ export class PaymentService {
     }
     const { payment_link_url, payment_session_id } = await res.json();
 
+    await this.prisma.order.update({
+      where: { orderId },
+      data: { xenditSessionId: payment_session_id },
+    });
+
     return {
       url: payment_link_url,
       sessionId: payment_session_id,
     };
   };
 
-  handleXenditWebhook = async () => {};
+  handleXenditWebhook = async (payload: any) => {
+    const { event, data } = payload;
+
+    if (event !== "payment.capture" || data?.status !== "SUCCEEDED") {
+      return { ok: true, ignored: true };
+    }
+
+    const order = await this.prisma.order.findFirst({
+      where: { orderId: data.reference_id, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+
+    if (order.paymentStatus === "SUCCESS") {
+      return { ok: true, skipped: true };
+    }
+    const paymentmethod = data.channel_code.spl;
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        paymentStatus: "SUCCESS",
+        paymentMethod: data.channel_code,
+        paymentTime: data.updated,
+      },
+    });
+
+    return { ok: true };
+  };
 }

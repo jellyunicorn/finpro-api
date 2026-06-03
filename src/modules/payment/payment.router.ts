@@ -24,8 +24,7 @@ export class PaymentRouter {
     );
     this.router.post(
       "/webhooks/xendit",
-      this.authMiddleware.verifyToken,
-      this.paymentController.createPaymentSession,
+      this.paymentController.handleXenditWebhook,
     );
   };
 
