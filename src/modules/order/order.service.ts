@@ -58,6 +58,7 @@ export class OrderServices {
     const address = await this.prisma.userAddress.findFirst({
       where: { id: body.pickupaddressid, userId: id, deletedAt: null },
     });
+
     if (!address) throw new ApiError("Pickup address not found", 404);
 
     const res = await this.prisma.order.create({
