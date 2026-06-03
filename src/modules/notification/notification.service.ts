@@ -24,14 +24,22 @@ export class NotificationService {
 
     const whereClause = { userId };
 
-    const notifications = this.prisma.notificationsOnUsers.findMany({
+    const notifications = await this.prisma.notificationsOnUsers.findMany({
       where: whereClause,
+      include: {
+        notification: {
+          select: {
+            title: true,
+            body: true,
+          },
+        },
+      },
       take,
       skip: (page - 1) * take,
       orderBy: { [sortBy]: sortOrder },
     });
 
-    const total = this.prisma.notificationsOnUsers.count({
+    const total = await this.prisma.notificationsOnUsers.count({
       where: whereClause,
     });
 

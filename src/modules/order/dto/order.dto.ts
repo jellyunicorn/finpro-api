@@ -8,14 +8,14 @@ import {
   Matches,
 } from "class-validator";
 
-export class createOrderDTO {
+export class CreateOrderDTO {
   @IsNotEmpty()
   @IsInt()
-  pickupaddressid!: number;
+  pickupAddressId!: number;
 
   @IsNotEmpty()
   @IsInt()
-  outletid!: number;
+  outletId!: number;
 
   @IsNotEmpty()
   @IsDateString()

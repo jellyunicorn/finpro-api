@@ -1,7 +1,5 @@
 import { PrismaClient } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
-import { CloudinaryService } from "../cloudinary/cloudinary.service.js";
-import { MailService } from "../mail/mail.service.js";
 
 export class AddressService {
   constructor(private prisma: PrismaClient) {}

@@ -147,10 +147,10 @@ export class DriverService {
     return { data: deliveries, meta: { page, take, total } };
   };
 
-  assignPickup = async (driverId: number, pickupId: number) => {
+  assignPickup = async (userId: number, pickupId: number) => {
     const driver = await this.prisma.employee.findUnique({
       where: {
-        id: driverId,
+        userId,
       },
     });
 
@@ -172,7 +172,7 @@ export class DriverService {
       throw new ApiError("Pickup is already assigned to another driver", 400);
     }
 
-    if (await this.hasActiveRequest(driverId)) {
+    if (await this.hasActiveRequest(driver.id)) {
       throw new ApiError("Driver already has an order assigned", 400);
     }
 
@@ -181,7 +181,7 @@ export class DriverService {
         id: pickupId,
       },
       data: {
-        driverId,
+        driverId: driver.id,
         status: PickupStatus.PENDING,
       },
     });
@@ -189,10 +189,10 @@ export class DriverService {
     return { message: "Pickup assignment to driver successful" };
   };
 
-  assignDelivery = async (driverId: number, deliveryId: number) => {
+  assignDelivery = async (userId: number, deliveryId: number) => {
     const driver = await this.prisma.employee.findUnique({
       where: {
-        id: driverId,
+        userId,
       },
     });
 
@@ -214,7 +214,7 @@ export class DriverService {
       throw new ApiError("Delivery is already assigned to another driver", 400);
     }
 
-    if (await this.hasActiveRequest(driverId)) {
+    if (await this.hasActiveRequest(driver.id)) {
       throw new ApiError("Driver already has an order assigned", 400);
     }
 
@@ -223,7 +223,7 @@ export class DriverService {
         id: deliveryId,
       },
       data: {
-        driverId,
+        driverId: driver.id,
         status: DeliveryStatus.PENDING,
       },
     });
