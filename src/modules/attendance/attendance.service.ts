@@ -3,11 +3,19 @@ import {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { GetEmployeeAttendanceDTO } from "./dto/getEmployeeAttendance.dto.js";
+import { GetOutletAttendanceLogDTO } from "./dto/getOutletAttendanceLog.dto.js";
 
 export class AttendanceService {
   constructor(private prisma: PrismaClient) {}
 
-  getAttendanceByEmployee = async (userId: number) => {
+  getAttendanceByEmployee = async ({
+    userId,
+    take,
+    page,
+    sortBy,
+    sortOrder,
+  }: GetEmployeeAttendanceDTO) => {
     const employee = await this.prisma.employee.findUnique({
       where: { userId },
     });
@@ -16,64 +24,78 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 400);
     }
 
+    const whereClause = { employeeId: employee.id };
+
     const attendances = await this.prisma.attendance.findMany({
-      where: { employeeId: employee.id },
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
     });
 
-    return attendances;
+    const total = await this.prisma.attendance.count({
+      where: whereClause,
+    });
+
+    return { data: attendances, meta: { page, take, total } };
   };
 
-  getAttendanceByOutlet = async (userId: number) => {
-    console.log(userId);
-
+  getAttendanceByOutlet = async ({
+    userId,
+    take,
+    page,
+    sortBy,
+    sortOrder,
+    attendanceLimit,
+  }: GetOutletAttendanceLogDTO) => {
     const admin = await this.prisma.employee.findUnique({
-      where: { userId },
+      where: {
+        userId,
+      },
     });
 
-    if (!admin) {
-      throw new ApiError("Outlet admin does not exist", 400);
-    }
-
-    if (admin.type != EmployeeType.ADMIN) {
+    if (!admin || admin.type !== EmployeeType.ADMIN) {
       throw new ApiError("Unauthorized access", 400);
     }
 
-    const outlet = await this.prisma.outlet.findUnique({
-      where: { id: admin.outletId },
-      include: {
-        employees: {
-          where: {
-            NOT: { type: EmployeeType.ADMIN },
-          },
-          select: {
-            id: true,
-            user: {
-              select: {
-                fullName: true,
-              },
-            },
-            attendance: {
-              orderBy: { startTime: "desc" },
-              select: {
-                id: true,
-                startTime: true,
-                endTime: true,
-              },
-            },
-          },
+    const skip = (page - 1) * take;
+    const whereClause = {
+      outletId: admin.outletId,
+      NOT: { type: EmployeeType.ADMIN },
+    };
+
+    const employees = await this.prisma.employee.findMany({
+      where: whereClause,
+      skip,
+      take,
+      orderBy: { [sortBy]: sortOrder },
+      select: {
+        id: true,
+        user: { select: { fullName: true } },
+        attendance: {
+          orderBy: { startTime: "desc" },
+          take: attendanceLimit,
+          select: { id: true, startTime: true, endTime: true },
         },
       },
     });
 
-    if (!outlet) {
-      throw new ApiError("Outlet not found", 400);
-    }
+    const total = await this.prisma.employee.count({
+      where: whereClause,
+    });
 
-    return outlet.employees.map((employee) => ({
-      id: employee.id,
-      fullName: employee.user.fullName,
-      attendance: employee.attendance,
-    }));
+    return {
+      data: employees.map((employee) => ({
+        id: employee.id,
+        fullName: employee.user.fullName,
+        attendance: employee.attendance,
+      })),
+      meta: {
+        page,
+        take,
+        total,
+      },
+    };
   };
 
   clockIn = async (userId: number) => {
@@ -82,22 +104,14 @@ export class AttendanceService {
     });
 
     if (!employee) {
-      throw new ApiError("Employee does not exist", 400);
+      throw new ApiError("Employee does not exist", 404);
     }
 
-    // const activeSession = await this.prisma.attendance.findFirst({
-    //   where: { employeeId: employee.id, endTime: null },
-    // });
-
-    // if (activeSession) {
-    //   throw new ApiError("Employee is already clocked in", 400);
-    // }
-
-    // await this.prisma.attendance.create({
-    //   data: {
-    //     employeeId: employee.id,
-    //   },
-    // });
+    await this.prisma.attendance.create({
+      data: {
+        employeeId: employee.id,
+      },
+    });
 
     return { message: "Attendance clock-in successful" };
   };
@@ -108,31 +122,31 @@ export class AttendanceService {
     });
 
     if (!employee) {
-      throw new ApiError("Employee does not exist", 400);
+      throw new ApiError("Employee does not exist", 404);
     }
 
-    // const activeSession = await this.prisma.attendance.findFirst({
-    //   where: {
-    //     employeeId: employee.id,
-    //     endTime: null,
-    //   },
-    //   orderBy: {
-    //     startTime: "desc",
-    //   },
-    // });
+    const latestAttendance = await this.prisma.attendance.findFirst({
+      where: {
+        employeeId: employee.id,
+        endTime: null,
+      },
+      orderBy: {
+        startTime: "desc",
+      },
+    });
 
-    // if (!activeSession) {
-    //   throw new ApiError("Employee is not clocked in", 400);
-    // }
+    if (!latestAttendance) {
+      throw new ApiError("Employee is not clocked in", 400);
+    }
 
-    // await this.prisma.attendance.update({
-    //   where: {
-    //     id: activeSession.id,
-    //   },
-    //   data: {
-    //     endTime: new Date(),
-    //   },
-    // });
+    await this.prisma.attendance.update({
+      where: {
+        id: latestAttendance.id,
+      },
+      data: {
+        endTime: new Date(),
+      },
+    });
 
     return { message: "Attendance clock-out successful" };
   };

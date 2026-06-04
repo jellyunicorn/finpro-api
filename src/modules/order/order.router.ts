@@ -2,7 +2,7 @@ import { Router } from "express";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { OrderController } from "./order.controller.js";
-import { createOrderDTO } from "./dto/order.dto.js";
+import { CreateOrderDTO } from "./dto/order.dto.js";
 
 export class OrderRouter {
   private router: Router;
@@ -26,7 +26,7 @@ export class OrderRouter {
     this.router.post(
       "/new",
       this.authMiddleware.verifyToken,
-      this.validationMiddleware.validateBody(createOrderDTO),
+      this.validationMiddleware.validateBody(CreateOrderDTO),
       this.orderController.addNewOrder,
     );
 

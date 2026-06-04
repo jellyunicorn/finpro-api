@@ -22,10 +22,16 @@ export class DriverRouter {
       this.driverController.getActiveRequest,
     );
     this.router.get(
-      "/request-history",
+      "/pickup-history",
       this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER]),
-      this.driverController.getActiveRequest,
+      this.driverController.getPickupHistory,
+    );
+    this.router.get(
+      "/delivery-history",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.DRIVER]),
+      this.driverController.getDeliveryHistory,
     );
     this.router.patch(
       "/pickup",

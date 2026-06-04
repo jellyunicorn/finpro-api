@@ -170,29 +170,29 @@ model OrderJob {
 }
 
 model OrderPickup {
-  id           Int          @id @default(autoincrement())
-  pickupNumber Int          @unique @map("pickup_number")
-  status       PickupStatus
-  createdAt    DateTime     @default(now()) @map("created_at")
-  updatedAt    DateTime     @updatedAt @map("updated_at")
-  deletedAt    DateTime?    @map("deleted_at")
+  id        Int          @id @default(autoincrement())
+  pickupId  String       @unique @default(uuid()) @map("pickup_id")
+  status    PickupStatus @default(WAITING_FOR_DRIVER)
+  createdAt DateTime     @default(now()) @map("created_at")
+  updatedAt DateTime     @updatedAt @map("updated_at")
+  deletedAt DateTime?    @map("deleted_at")
 
-  driverId Int      @map("driver_id")
-  driver   Employee @relation(fields: [driverId], references: [id])
+  driverId Int?      @map("driver_id")
+  driver   Employee? @relation(fields: [driverId], references: [id])
 
   @@map("order_pickups")
 }
 
 model OrderDelivery {
-  id             Int            @id @default(autoincrement())
-  deliveryNumber Int            @unique @map("delivery_number")
-  status         DeliveryStatus
-  createdAt      DateTime       @default(now()) @map("created_at")
-  updatedAt      DateTime       @updatedAt @map("updated_at")
-  deletedAt      DateTime?      @map("deleted_at")
+  id         Int            @id @default(autoincrement())
+  deliveryId String         @unique @default(uuid()) @map("delivery_id")
+  status     DeliveryStatus @default(WAITING_FOR_DRIVER)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  updatedAt  DateTime       @updatedAt @map("updated_at")
+  deletedAt  DateTime?      @map("deleted_at")
 
-  driverId Int      @map("driver_id")
-  driver   Employee @relation(fields: [driverId], references: [id])
+  driverId Int?      @map("driver_id")
+  driver   Employee? @relation(fields: [driverId], references: [id])
 
   @@map("order_deliveries")
 }
@@ -209,12 +209,13 @@ model Notification {
 }
 
 model NotificationsOnUsers {
-  userId         Int
+  userId         Int          @map("user_id")
   user           User         @relation(fields: [userId], references: [id])
-  notificationId Int
+  notificationId Int          @map("notification_id")
   notification   Notification @relation(fields: [notificationId], references: [id])
-  readAt         DateTime?
-  deletedAt      DateTime?
+  readAt         DateTime?    @map("read_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  deletedAt      DateTime?    @map("deleted_at")
 
   @@id([userId, notificationId])
   @@map("user_notifications")
