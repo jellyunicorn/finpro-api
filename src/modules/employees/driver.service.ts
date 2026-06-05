@@ -5,6 +5,8 @@ import {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { GetDeliveryHistoryDTO } from "./dto/getDeliveryHistory.dto.js";
+import { GetPickupHistoryDTO } from "./dto/getPickupHistory.dto.js";
 
 export class DriverService {
   constructor(private prisma: PrismaClient) {}
@@ -79,10 +81,16 @@ export class DriverService {
     throw new ApiError("No active requests found", 404);
   };
 
-  getRequestHistory = async (driverId: number) => {
+  getPickupHistory = async ({
+    userId,
+    page,
+    take,
+    sortBy,
+    sortOrder,
+  }: GetPickupHistoryDTO) => {
     const driver = await this.prisma.employee.findUnique({
       where: {
-        id: driverId,
+        userId,
       },
     });
 
@@ -90,25 +98,59 @@ export class DriverService {
       throw new ApiError("Driver not found", 404);
     }
 
+    const whereClause = { driverId: driver.id };
+
     const pickups = await this.prisma.orderPickup.findMany({
-      where: {
-        driverId,
-      },
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
     });
 
-    const deliveries = await this.prisma.orderDelivery.findMany({
-      where: {
-        driverId,
-      },
+    const total = await this.prisma.orderPickup.count({
+      where: whereClause,
     });
 
-    return { pickups, deliveries };
+    return { data: pickups, meta: { page, take, total } };
   };
 
-  assignPickup = async (driverId: number, pickupId: number) => {
+  getDeliveryHistory = async ({
+    userId,
+    page,
+    take,
+    sortBy,
+    sortOrder,
+  }: GetDeliveryHistoryDTO) => {
     const driver = await this.prisma.employee.findUnique({
       where: {
-        id: driverId,
+        userId,
+      },
+    });
+
+    if (!driver || driver.type !== EmployeeType.DRIVER) {
+      throw new ApiError("Driver not found", 404);
+    }
+
+    const whereClause = { driverId: driver.id };
+
+    const deliveries = await this.prisma.orderDelivery.findMany({
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
+    });
+
+    const total = await this.prisma.orderPickup.count({
+      where: whereClause,
+    });
+
+    return { data: deliveries, meta: { page, take, total } };
+  };
+
+  assignPickup = async (userId: number, pickupId: number) => {
+    const driver = await this.prisma.employee.findUnique({
+      where: {
+        userId,
       },
     });
 
@@ -130,7 +172,7 @@ export class DriverService {
       throw new ApiError("Pickup is already assigned to another driver", 400);
     }
 
-    if (await this.hasActiveRequest(driverId)) {
+    if (await this.hasActiveRequest(driver.id)) {
       throw new ApiError("Driver already has an order assigned", 400);
     }
 
@@ -139,7 +181,7 @@ export class DriverService {
         id: pickupId,
       },
       data: {
-        driverId,
+        driverId: driver.id,
         status: PickupStatus.PENDING,
       },
     });
@@ -147,10 +189,10 @@ export class DriverService {
     return { message: "Pickup assignment to driver successful" };
   };
 
-  assignDelivery = async (driverId: number, deliveryId: number) => {
+  assignDelivery = async (userId: number, deliveryId: number) => {
     const driver = await this.prisma.employee.findUnique({
       where: {
-        id: driverId,
+        userId,
       },
     });
 
@@ -172,7 +214,7 @@ export class DriverService {
       throw new ApiError("Delivery is already assigned to another driver", 400);
     }
 
-    if (await this.hasActiveRequest(driverId)) {
+    if (await this.hasActiveRequest(driver.id)) {
       throw new ApiError("Driver already has an order assigned", 400);
     }
 
@@ -181,7 +223,7 @@ export class DriverService {
         id: deliveryId,
       },
       data: {
-        driverId,
+        driverId: driver.id,
         status: DeliveryStatus.PENDING,
       },
     });

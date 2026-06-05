@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { OrderServices } from "./order.service.js";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
+import { plainToInstance } from "class-transformer";
+import { CreateOrderDTO } from "./dto/order.dto.js";
 
 export class OrderController {
   constructor(private orderService: OrderServices) {}
@@ -20,7 +22,7 @@ export class OrderController {
   };
   addNewOrder = async (req: Request, res: Response) => {
     const id = res.locals.user.id;
-    const body = req.body;
+    const body = plainToInstance(CreateOrderDTO, req.body);
     const result = await this.orderService.addNewOrder(body, id);
     res.status(201).send(result);
   };

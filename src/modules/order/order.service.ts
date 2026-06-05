@@ -3,14 +3,8 @@ import {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { CreateOrderDTO } from "./dto/order.dto.js";
 
-type neworder = {
-  pickupAddressId: number;
-  outletId: number;
-  pickupDate: string;
-  pickupTime: string;
-  distance: number;
-};
 export class OrderServices {
   constructor(private prisma: PrismaClient) {}
 
@@ -49,7 +43,7 @@ export class OrderServices {
     });
   };
 
-  addNewOrder = async (body: neworder, id: number) => {
+  addNewOrder = async (body: CreateOrderDTO, id: number) => {
     const checkoutlet = await this.prisma.outlet.findUnique({
       where: { id: body.outletId },
     });
@@ -78,10 +72,14 @@ export class OrderServices {
         },
       });
 
+      const orderPickup = await tx.orderPickup.create({
+        data: {},
+      });
+
       const driverNotification = await tx.notification.create({
         data: {
           title: "New Order Created",
-          body: `Order #${order.orderId} ready for pickup`,
+          body: `Order #${orderPickup.pickupId} ready for pickup`,
         },
       });
 

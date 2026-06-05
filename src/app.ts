@@ -35,6 +35,9 @@ import { OrderServices } from "./modules/order/order.service.js";
 import { PaymentService } from "./modules/payment/payment.service.js";
 import { PaymentController } from "./modules/payment/payment.controller.js";
 import { PaymentRouter } from "./modules/payment/payment.router.js";
+import { NotificationService } from "./modules/notification/notification.service.js";
+import { NotificationController } from "./modules/notification/notification.controller.js";
+import { NotificationRouter } from "./modules/notification/notification.router.js";
 
 export class App {
   app: Express;
@@ -65,6 +68,7 @@ export class App {
     const orderService = new OrderServices(prisma);
     const attendanceService = new AttendanceService(prisma);
     const driverService = new DriverService(prisma);
+    const notificationService = new NotificationService(prisma);
 
     // controllers
     const paymentController = new PaymentController(paymentService);
@@ -74,6 +78,9 @@ export class App {
     const orderController = new OrderController(orderService);
     const attendanceController = new AttendanceController(attendanceService);
     const driverController = new DriverController(driverService);
+    const notificationController = new NotificationController(
+      notificationService,
+    );
 
     // middlewares
     const authMiddleware = new AuthMiddleware();
@@ -110,6 +117,10 @@ export class App {
       authMiddleware,
       validationMiddleware,
     );
+    const notificationRouter = new NotificationRouter(
+      notificationController,
+      authMiddleware,
+    );
 
     // entry point
     this.app.use("/auth", authRouter.getRouter());
@@ -119,6 +130,7 @@ export class App {
     this.app.use("/payment", paymentRouter.getRouter());
     this.app.use("/driver", driverRouter.getRouter());
     this.app.use("/order", orderRouter.getRouter());
+    this.app.use("/notification", notificationRouter.getRouter());
   }
 
   private errorMiddleware() {
