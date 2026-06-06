@@ -120,14 +120,17 @@ model Order {
   updatedAt     DateTime       @updatedAt @map("updated_at")
   deletedAt     DateTime?      @map("deleted_at")
 
-  userId     Int          @map("user_id")
-  user       User         @relation(fields: [userId], references: [id])
-  outletId   Int          @map("outlet_id")
-  outlet     Outlet       @relation(fields: [outletId], references: [id])
-  addressId  Int?         @map("address_id")
-  address    UserAddress? @relation(fields: [addressId], references: [id])
-  orderItems OrderItem[]
-  complaints Complaint[]
+  userId          Int             @map("user_id")
+  user            User            @relation(fields: [userId], references: [id])
+  outletId        Int             @map("outlet_id")
+  outlet          Outlet          @relation(fields: [outletId], references: [id])
+  addressId       Int?            @map("address_id")
+  address         UserAddress?    @relation(fields: [addressId], references: [id])
+  orderItems      OrderItem[]
+  complaints      Complaint[]
+  orderPickups    OrderPickup[]
+  orderDeliveries OrderDelivery[]
+  orderJobs       OrderJob[]
 
   @@map("orders")
 }
@@ -156,7 +159,7 @@ model OrderJob {
   bypassedBy     String?
   station        Station
   startTime      DateTime  @map("start_time")
-  endTime        DateTime  @map("end_time")
+  endTime        DateTime? @map("end_time")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   deletedAt      DateTime? @map("deleted_at")
@@ -165,6 +168,8 @@ model OrderJob {
   employee   Employee @relation(fields: [employeeId], references: [id])
   outletId   Int      @map("outlet_id")
   outlet     Outlet   @relation(fields: [outletId], references: [id])
+  orderId    Int?     @map("order_id")
+  order      Order?   @relation(fields: [orderId], references: [id])
 
   @@map("order_jobs")
 }
@@ -179,6 +184,8 @@ model OrderPickup {
 
   driverId Int?      @map("driver_id")
   driver   Employee? @relation(fields: [driverId], references: [id])
+  orderId  Int?      @map("order_id")
+  order    Order?    @relation(fields: [orderId], references: [id])
 
   @@map("order_pickups")
 }
@@ -193,6 +200,8 @@ model OrderDelivery {
 
   driverId Int?      @map("driver_id")
   driver   Employee? @relation(fields: [driverId], references: [id])
+  orderId  Int?      @map("order_id")
+  order    Order?    @relation(fields: [orderId], references: [id])
 
   @@map("order_deliveries")
 }
