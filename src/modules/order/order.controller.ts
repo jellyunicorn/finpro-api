@@ -12,11 +12,15 @@ export class OrderController {
     const searchQuery = req.query.search as string | undefined;
     const monthQuery = Number(req.query.month) || 0;
     const dateQuery = Number(req.query.date) || 0;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 9;
     const result = await this.orderService.getOrders(
       id,
       searchQuery,
       monthQuery,
       dateQuery,
+      page,
+      limit,
     );
     res.status(200).send(result);
   };

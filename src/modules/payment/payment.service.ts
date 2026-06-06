@@ -36,7 +36,8 @@ export class PaymentService {
       const subtotal = e.price * e.quantity;
       amount = amount + subtotal;
     });
-
+    if (amount === 0)
+      throw new ApiError("Order has not finished inputted by worker", 404);
     const res = await fetch("https://api.xendit.co/sessions", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: this.auth },
@@ -71,8 +72,12 @@ export class PaymentService {
   handleXenditWebhook = async (payload: any) => {
     const { event, data } = payload;
 
-    if (event !== "payment.capture" || data?.status !== "SUCCEEDED") {
-      return { ok: true, ignored: true };
+    console.log("[xendit-webhook] event:", event);
+    console.log("[xendit-webhook] reference_id:", data?.reference_id);
+    console.log("[xendit-webhook] status:", data?.status);
+
+    if (event !== "payment.capture") {
+      return { ok: true, ignored: true, reason: "not payment capture event" };
     }
 
     const order = await this.prisma.order.findFirst({
@@ -82,9 +87,12 @@ export class PaymentService {
     if (!order) throw new ApiError("Order not found", 404);
 
     if (order.paymentStatus === "SUCCESS") {
-      return { ok: true, skipped: true };
+      return {
+        ok: true,
+        skipped: true,
+        reason: "this transaction already paid",
+      };
     }
-    const paymentmethod = data.channel_code.spl;
     await this.prisma.order.update({
       where: { id: order.id },
       data: {
@@ -94,6 +102,15 @@ export class PaymentService {
       },
     });
 
-    return { ok: true };
+    if (order.orderStatus === "WAITING_FOR_PAYMENT") {
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: {
+          orderStatus: "READY_TO_DELIVER",
+        },
+      });
+    }
+
+    return { ok: true, message: `${order.id} success webhook` };
   };
 }

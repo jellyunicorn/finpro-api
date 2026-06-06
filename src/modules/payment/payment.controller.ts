@@ -20,10 +20,9 @@ export class PaymentController {
       return res.status(401).end();
     }
 
-    res.status(200).end();
-
     try {
-      await this.paymentService.handleXenditWebhook(req.body);
+      const result = await this.paymentService.handleXenditWebhook(req.body);
+      res.status(200).send(result);
     } catch (err) {
       console.error("Xendit webhook processing failed:", err);
     }

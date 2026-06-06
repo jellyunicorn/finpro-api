@@ -17,7 +17,7 @@ export class AddressRouter {
 
   private initializedRoutes = () => {
     this.router.get(
-      "/",
+      "/user",
       this.authMiddleware.verifyToken,
       this.addressController.getUserAddress,
     );
@@ -46,6 +46,9 @@ export class AddressRouter {
       this.authMiddleware.verifyToken,
       this.addressController.deleteAddress,
     );
+    this.router.get("/regency", this.addressController.getRegency);
+    this.router.get("/district/:regcode", this.addressController.getDistrict);
+    this.router.get("/village/:discode", this.addressController.getVillage);
   };
 
   getRouter = () => {

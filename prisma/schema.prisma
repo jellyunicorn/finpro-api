@@ -77,8 +77,15 @@ model UserAddress {
   updatedAt  DateTime  @updatedAt @map("updated_at")
   deletedAt  DateTime? @map("deleted_at")
 
-  userId Int     @map("user_id")
-  user   User    @relation(fields: [userId], references: [id])
+  userId       Int       @map("user_id")
+  user         User      @relation(fields: [userId], references: [id])
+  regencyCode  String?   @map("regency_code")
+  regency      Regency?  @relation(fields: [regencyCode], references: [code])
+  districtCode String?   @map("district_code")
+  district     District? @relation(fields: [districtCode], references: [code])
+  villageCode  String?   @map("village_code")
+  village      Village?  @relation(fields: [villageCode], references: [code])
+
   orders Order[]
 
   @@map("user_addresses")
@@ -119,7 +126,7 @@ model Order {
   createdAt       DateTime       @default(now()) @map("created_at")
   updatedAt       DateTime       @updatedAt @map("updated_at")
   deletedAt       DateTime?      @map("deleted_at")
-  xenditSessionId String?         @map("xendit_session_id")
+  xenditSessionId String?        @map("xendit_session_id")
 
   userId     Int          @map("user_id")
   user       User         @relation(fields: [userId], references: [id])
@@ -253,6 +260,46 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+model Province {
+  code      String    @id
+  name      String
+  regencies Regency[]
+
+  @@map("provinces")
+}
+
+model Regency {
+  code          String        @id
+  name          String
+  provinceCode  String        @map("province_code")
+  province      Province      @relation(fields: [provinceCode], references: [code])
+  districts     District[]
+  userAddresses UserAddress[]
+
+  @@map("regencies")
+}
+
+model District {
+  code          String        @id
+  name          String
+  regencyCode   String        @map("regency_code")
+  regency       Regency       @relation(fields: [regencyCode], references: [code])
+  villages      Village[]
+  userAddresses UserAddress[]
+
+  @@map("districts")
+}
+
+model Village {
+  code          String        @id
+  name          String
+  districtCode  String        @map("district_code")
+  district      District      @relation(fields: [districtCode], references: [code])
+  userAddresses UserAddress[]
+
+  @@map("villages")
+}
+
 enum Role {
   USER
   ADMIN
@@ -299,6 +346,7 @@ enum PaymentStatus {
 enum PaymentMethod {
   VISA
   MASTERCARD
+  CARDS
   GOPAY
   DANA
   XENDIT

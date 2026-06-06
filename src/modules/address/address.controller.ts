@@ -46,4 +46,19 @@ export class AddressController {
     );
     res.status(200).send(result);
   };
+
+  getRegency = async (req: Request, res: Response) => {
+    const result = await this.addressService.getRegency();
+    res.status(200).send(result);
+  };
+  getDistrict = async (req: Request, res: Response) => {
+    const regcode = req.params.regcode as string;
+    const result = await this.addressService.getDistrict(regcode);
+    res.status(200).send(result);
+  };
+  getVillage = async (req: Request, res: Response) => {
+    const regcode = req.params.discode as string;
+    const result = await this.addressService.getVillage(regcode);
+    res.status(200).send(result);
+  };
 }
