@@ -9,6 +9,7 @@ import {
   PickupStatus,
   DeliveryStatus,
   ComplaintType,
+  Station,
 } from "../generated/prisma/client.js";
 import * as argon2 from "argon2";
 import { prisma } from "../src/lib/prisma.js";
@@ -115,6 +116,14 @@ async function main() {
       status: DeliveryStatus.WAITING_FOR_DRIVER,
       orderId: order.id,
       driverId: employee.id,
+    },
+  });
+
+  await prisma.orderJob.create({
+    data: {
+      orderId: 1,
+      outletId: 1,
+      station: Station.WASHING,
     },
   });
 

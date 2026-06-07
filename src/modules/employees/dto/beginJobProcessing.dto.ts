@@ -4,6 +4,7 @@ import {
   IsEnum,
   IsInt,
   IsPositive,
+  IsString,
   ValidateNested,
 } from "class-validator";
 import { Station } from "../../../../generated/prisma/enums.js";
@@ -18,11 +19,8 @@ export class OrderItemInputDto {
 }
 
 export class BeginJobProcessingDto {
-  @IsInt()
-  orderId!: number;
-
-  @IsEnum(Station)
-  station!: Station;
+  @IsString()
+  jobId!: string;
 
   @IsArray()
   @ValidateNested({ each: true })

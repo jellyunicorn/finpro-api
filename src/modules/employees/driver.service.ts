@@ -213,6 +213,10 @@ export class DriverService {
 
     const orderId = pickup.orderId;
 
+    if (!orderId) {
+      throw new ApiError("Order not found", 404);
+    }
+
     const order = await this.prisma.order.findUnique({
       where: {
         id: orderId,

@@ -18,6 +18,12 @@ export class WorkerRouter {
   }
 
   private initializedRoutes = () => {
+    this.router.get(
+      "/jobs",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.WORKER]),
+      this.workerController.getAvailableJobs,
+    );
     this.router.post(
       "/begin-job",
       this.authMiddleware.verifyToken,

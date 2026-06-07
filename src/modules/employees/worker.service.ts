@@ -6,34 +6,97 @@ import {
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
 import { BeginJobProcessingDto } from "./dto/beginJobProcessing.dto.js";
+import { GetAvailableJobsDto } from "./dto/getAvailableJobs.dto.js";
 
 export class WorkerService {
   constructor(private prisma: PrismaClient) {}
 
+  getAvailableJobs = async (
+    userId: number,
+    { page, take, sortBy, sortOrder }: GetAvailableJobsDto,
+  ) => {
+    const worker = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+
+    if (!worker) {
+      throw new ApiError("Worker not found", 404);
+    }
+
+    if (worker.type !== EmployeeType.WORKER) {
+      throw new ApiError("Unauthorized access", 403);
+    }
+
+    const outlet = await this.prisma.outlet.findUnique({
+      where: { id: worker.outletId },
+    });
+
+    if (!outlet) {
+      throw new ApiError("Outlet not found", 404);
+    }
+
+    const whereClause = {
+      outletId: outlet.id,
+      endTime: null,
+      employeeId: null,
+    };
+
+    const jobs = await this.prisma.orderJob.findMany({
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
+      select: {
+        jobId: true,
+        station: true,
+        createdAt: true,
+        order: {
+          select: {
+            orderItems: {
+              select: {
+                id: true,
+                name: true,
+                quantity: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    const denestedJobs = jobs.map((job) => ({
+      jobId: job.jobId,
+      station: job.station,
+      createdAt: job.createdAt,
+      orderItems: job.order.orderItems.map((item) => ({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+      })),
+    }));
+
+    const total = await this.prisma.orderJob.count({
+      where: whereClause,
+    });
+
+    return { data: denestedJobs, meta: { page, take, total } };
+  };
+
   beginJobProcessing = async (userId: number, dto: BeginJobProcessingDto) => {
-    const { orderId, station, items } = dto;
+    const { jobId, items } = dto;
 
     const result = await this.prisma.$transaction(async (tx) => {
-      const existingItems = await tx.orderItem.findMany({
-        where: {
-          orderId,
-        },
+      const job = await tx.orderJob.findUnique({
+        where: { jobId },
+        include: { order: true },
       });
 
-      const order = await tx.order.findUnique({
-        where: {
-          id: orderId,
-        },
-      });
-
-      if (!order) {
-        throw new ApiError("Order not found", 404);
+      if (!job) {
+        throw new ApiError("Job not found", 404);
       }
 
       const worker = await tx.employee.findUnique({
-        where: {
-          userId,
-        },
+        where: { userId },
       });
 
       if (!worker) {
@@ -44,17 +107,19 @@ export class WorkerService {
         throw new ApiError("Unauthorized access", 403);
       }
 
+      const existingItems = await tx.orderItem.findMany({
+        where: { orderId: job.orderId },
+      });
+
       const mismatch = items.some((input) => {
         const match = existingItems.find((e) => e.id === input.itemId);
         return !match || match.quantity !== input.quantity;
       });
 
-      const job = await tx.orderJob.create({
+      const updatedJob = await tx.orderJob.update({
+        where: { jobId },
         data: {
-          orderId,
           employeeId: worker.id,
-          outletId: order.outletId,
-          station,
           startTime: new Date(),
           isBypassed: mismatch,
           bypassApproved: null,
@@ -63,12 +128,12 @@ export class WorkerService {
 
       if (!mismatch) {
         await tx.order.update({
-          where: { id: orderId },
-          data: { orderStatus: station },
+          where: { id: job.orderId },
+          data: { orderStatus: job.station }, // station already stored in job
         });
       }
 
-      return { job, mismatch };
+      return { job: updatedJob, mismatch };
     });
 
     if (result.mismatch) {
@@ -78,7 +143,7 @@ export class WorkerService {
     }
 
     return {
-      message: `Order #${dto.orderId} processing started at ${dto.station} station`,
+      message: `Job #${dto.jobId} processing started at ${result.job.station} station`,
     };
   };
 
@@ -90,7 +155,7 @@ export class WorkerService {
         include: { order: true },
       });
 
-      if (!job) {
+      if (!job || !job.order || !job.orderId) {
         throw new ApiError("Order job not found", 404);
       }
 
