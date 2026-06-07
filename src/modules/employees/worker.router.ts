@@ -24,6 +24,18 @@ export class WorkerRouter {
       this.authMiddleware.verifyRole([Role.WORKER]),
       this.workerController.getAvailableJobs,
     );
+    this.router.get(
+      "/active-jobs",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.WORKER]),
+      this.workerController.getActiveJobs,
+    );
+    this.router.get(
+      "/job-history",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.WORKER]),
+      this.workerController.getJobHistory,
+    );
     this.router.post(
       "/begin-job",
       this.authMiddleware.verifyToken,

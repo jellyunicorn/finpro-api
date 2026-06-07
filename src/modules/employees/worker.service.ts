@@ -2,45 +2,24 @@ import {
   EmployeeType,
   OrderStatus,
   PaymentStatus,
+  Prisma,
   PrismaClient,
+  Station,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { PaginationQueryParams } from "../pagination/pagination.dto.js";
 import { BeginJobProcessingDto } from "./dto/beginJobProcessing.dto.js";
+import { GetActiveJobsDto } from "./dto/getActiveJobs.dto.js";
 import { GetAvailableJobsDto } from "./dto/getAvailableJobs.dto.js";
+import { GetJobHistoryDto } from "./dto/getJobHistory.dto.js";
 
 export class WorkerService {
   constructor(private prisma: PrismaClient) {}
 
-  getAvailableJobs = async (
-    userId: number,
-    { page, take, sortBy, sortOrder }: GetAvailableJobsDto,
+  fetchJobs = async (
+    whereClause: Prisma.OrderJobWhereInput,
+    { page, take, sortBy, sortOrder }: PaginationQueryParams,
   ) => {
-    const worker = await this.prisma.employee.findUnique({
-      where: { userId },
-    });
-
-    if (!worker) {
-      throw new ApiError("Worker not found", 404);
-    }
-
-    if (worker.type !== EmployeeType.WORKER) {
-      throw new ApiError("Unauthorized access", 403);
-    }
-
-    const outlet = await this.prisma.outlet.findUnique({
-      where: { id: worker.outletId },
-    });
-
-    if (!outlet) {
-      throw new ApiError("Outlet not found", 404);
-    }
-
-    const whereClause = {
-      outletId: outlet.id,
-      endTime: null,
-      employeeId: null,
-    };
-
     const jobs = await this.prisma.orderJob.findMany({
       where: whereClause,
       take,
@@ -82,9 +61,88 @@ export class WorkerService {
     return { data: denestedJobs, meta: { page, take, total } };
   };
 
-  beginJobProcessing = async (userId: number, dto: BeginJobProcessingDto) => {
-    const { jobId, items } = dto;
+  getAvailableJobs = async (userId: number, dto: GetAvailableJobsDto) => {
+    const worker = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
 
+    if (!worker) {
+      throw new ApiError("Worker not found", 404);
+    }
+
+    if (worker.type !== EmployeeType.WORKER) {
+      throw new ApiError("Unauthorized access", 403);
+    }
+
+    const outlet = await this.prisma.outlet.findUnique({
+      where: { id: worker.outletId },
+    });
+
+    if (!outlet) {
+      throw new ApiError("Outlet not found", 404);
+    }
+
+    const whereClause = {
+      outletId: outlet.id,
+      endTime: null,
+      employeeId: null,
+    };
+
+    const jobs = await this.fetchJobs(whereClause, dto);
+
+    return jobs;
+  };
+
+  getActiveJobs = async (userId: number, dto: GetActiveJobsDto) => {
+    const worker = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+
+    if (!worker) {
+      throw new ApiError("Worker not found", 404);
+    }
+
+    if (worker.type !== EmployeeType.WORKER) {
+      throw new ApiError("Unauthorized access", 403);
+    }
+
+    const whereClause = {
+      workerId: worker.id,
+      endTime: null,
+    };
+
+    const jobs = await this.fetchJobs(whereClause, dto);
+
+    return jobs;
+  };
+
+  getJobHistory = async (userId: number, dto: GetJobHistoryDto) => {
+    const worker = await this.prisma.employee.findUnique({
+      where: { userId },
+    });
+
+    if (!worker) {
+      throw new ApiError("Worker not found", 404);
+    }
+
+    if (worker.type !== EmployeeType.WORKER) {
+      throw new ApiError("Unauthorized access", 403);
+    }
+
+    const whereClause = {
+      workerId: worker.id,
+      endTime: { not: null },
+    };
+
+    const jobs = await this.fetchJobs(whereClause, dto);
+
+    return jobs;
+  };
+
+  beginJobProcessing = async (
+    userId: number,
+    { jobId, items }: BeginJobProcessingDto,
+  ) => {
     const result = await this.prisma.$transaction(async (tx) => {
       const job = await tx.orderJob.findUnique({
         where: { jobId },
@@ -129,7 +187,7 @@ export class WorkerService {
       if (!mismatch) {
         await tx.order.update({
           where: { id: job.orderId },
-          data: { orderStatus: job.station }, // station already stored in job
+          data: { orderStatus: job.station },
         });
       }
 
@@ -143,36 +201,38 @@ export class WorkerService {
     }
 
     return {
-      message: `Job #${dto.jobId} processing started at ${result.job.station} station`,
+      message: `Job #${jobId} processing started at ${result.job.station} station`,
     };
   };
 
-  finishJobProcessing = async (jobId: number) => {
-    const result = await this.prisma.$transaction(async (tx) => {
+  finishJobProcessing = async (jobId: string) => {
+    await this.prisma.$transaction(async (tx) => {
       const job = await tx.orderJob.update({
-        where: { id: jobId },
+        where: { jobId },
         data: { endTime: new Date() },
         include: { order: true },
       });
 
-      if (!job || !job.order || !job.orderId) {
+      if (!job) {
         throw new ApiError("Order job not found", 404);
       }
 
       let nextStatus: OrderStatus | null = null;
+      let nextStation: Station | null = null;
       switch (job.station) {
         case OrderStatus.WASHING:
           nextStatus = OrderStatus.IRONING;
+          nextStation = Station.IRONING;
           break;
         case OrderStatus.IRONING:
           nextStatus = OrderStatus.PACKING;
+          nextStation = Station.PACKING;
           break;
         case OrderStatus.PACKING:
-          if (job.order.paymentStatus !== PaymentStatus.SUCCESS) {
-            nextStatus = OrderStatus.WAITING_FOR_PAYMENT;
-          } else {
-            nextStatus = OrderStatus.READY_TO_DELIVER;
-          }
+          nextStatus =
+            job.order.paymentStatus !== PaymentStatus.SUCCESS
+              ? OrderStatus.WAITING_FOR_PAYMENT
+              : OrderStatus.READY_TO_DELIVER;
           break;
       }
 
@@ -183,12 +243,52 @@ export class WorkerService {
         });
       }
 
-      return { job, nextStatus };
+      if (nextStatus === OrderStatus.READY_TO_DELIVER) {
+        const orderDelivery = await tx.orderDelivery.create({
+          data: {
+            orderId: job.orderId,
+          },
+        });
+
+        const driverNotification = await tx.notification.create({
+          data: {
+            title: "New Order Created",
+            body: `Order #${orderDelivery.deliveryId} ready for pickup`,
+          },
+        });
+
+        const drivers = await tx.employee.findMany({
+          where: {
+            outletId: job.order.outletId,
+            type: EmployeeType.DRIVER,
+          },
+          select: {
+            userId: true,
+          },
+        });
+
+        await tx.notificationsOnUsers.createMany({
+          data: drivers.map((driver) => ({
+            userId: driver.userId,
+            notificationId: driverNotification.id,
+          })),
+        });
+      }
+
+      if (nextStation && job.station !== Station.PACKING) {
+        await tx.orderJob.create({
+          data: {
+            orderId: job.orderId,
+            outletId: job.order.outletId,
+            station: nextStation,
+            employeeId: null,
+          },
+        });
+      }
     });
 
     return {
       message: `Job #${jobId} finished successfully`,
-      nextStatus: result.nextStatus,
     };
   };
 }
