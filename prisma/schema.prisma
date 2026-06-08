@@ -128,14 +128,17 @@ model Order {
   deletedAt       DateTime?      @map("deleted_at")
   xenditSessionId String?        @map("xendit_session_id")
 
-  userId     Int          @map("user_id")
-  user       User         @relation(fields: [userId], references: [id])
-  outletId   Int          @map("outlet_id")
-  outlet     Outlet       @relation(fields: [outletId], references: [id])
-  addressId  Int?         @map("address_id")
-  address    UserAddress? @relation(fields: [addressId], references: [id])
-  orderItems OrderItem[]
-  complaints Complaint[]
+  userId          Int             @map("user_id")
+  user            User            @relation(fields: [userId], references: [id])
+  outletId        Int             @map("outlet_id")
+  outlet          Outlet          @relation(fields: [outletId], references: [id])
+  addressId       Int?            @map("address_id")
+  address         UserAddress?    @relation(fields: [addressId], references: [id])
+  orderItems      OrderItem[]
+  complaints      Complaint[]
+  orderPickups    OrderPickup[]
+  orderDeliveries OrderDelivery[]
+  orderJobs       OrderJob[]
 
   @@map("orders")
 }
@@ -159,27 +162,30 @@ model OrderItem {
 
 model OrderJob {
   id             Int       @id @default(autoincrement())
+  jobId          String    @unique @default(cuid()) @map("job_id")
   isBypassed     Boolean   @default(false) @map("is_bypassed")
   bypassApproved Boolean?  @map("bypass_approved")
   bypassedBy     String?
   station        Station
-  startTime      DateTime  @map("start_time")
-  endTime        DateTime  @map("end_time")
+  startTime      DateTime  @default(now()) @map("start_time")
+  endTime        DateTime? @map("end_time")
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   deletedAt      DateTime? @map("deleted_at")
 
-  employeeId Int      @map("employee_id")
-  employee   Employee @relation(fields: [employeeId], references: [id])
-  outletId   Int      @map("outlet_id")
-  outlet     Outlet   @relation(fields: [outletId], references: [id])
+  employeeId Int?      @map("employee_id")
+  employee   Employee? @relation(fields: [employeeId], references: [id])
+  outletId   Int       @map("outlet_id")
+  outlet     Outlet    @relation(fields: [outletId], references: [id])
+  orderId    Int       @map("order_id")
+  order      Order     @relation(fields: [orderId], references: [id])
 
   @@map("order_jobs")
 }
 
 model OrderPickup {
   id        Int          @id @default(autoincrement())
-  pickupId  String       @unique @default(uuid()) @map("pickup_id")
+  pickupId  String       @unique @default(cuid()) @map("pickup_id")
   status    PickupStatus @default(WAITING_FOR_DRIVER)
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
@@ -187,13 +193,15 @@ model OrderPickup {
 
   driverId Int?      @map("driver_id")
   driver   Employee? @relation(fields: [driverId], references: [id])
+  orderId  Int       @map("order_id")
+  order    Order     @relation(fields: [orderId], references: [id])
 
   @@map("order_pickups")
 }
 
 model OrderDelivery {
   id         Int            @id @default(autoincrement())
-  deliveryId String         @unique @default(uuid()) @map("delivery_id")
+  deliveryId String         @unique @default(cuid()) @map("delivery_id")
   status     DeliveryStatus @default(WAITING_FOR_DRIVER)
   createdAt  DateTime       @default(now()) @map("created_at")
   updatedAt  DateTime       @updatedAt @map("updated_at")
@@ -201,6 +209,8 @@ model OrderDelivery {
 
   driverId Int?      @map("driver_id")
   driver   Employee? @relation(fields: [driverId], references: [id])
+  orderId  Int       @map("order_id")
+  order    Order     @relation(fields: [orderId], references: [id])
 
   @@map("order_deliveries")
 }

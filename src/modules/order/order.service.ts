@@ -85,7 +85,9 @@ export class OrderServices {
       });
 
       const orderPickup = await tx.orderPickup.create({
-        data: {},
+        data: {
+          orderId: order.id,
+        },
       });
 
       const driverNotification = await tx.notification.create({
