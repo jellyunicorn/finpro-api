@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import { UserService } from "./user.service.js";
+import jwt from "jsonwebtoken";
+
 import { ApiError } from "../../utils/api-error.js";
+import { email } from "zod";
 
 export class UserController {
   constructor(private userService: UserService) {}
@@ -53,11 +56,23 @@ export class UserController {
 
   changePassword = async (req: Request, res: Response) => {
     const newPass = req.body.password;
-    const userId = res.locals.user.id;
-    if (!newPass) {
-      throw new ApiError("no new password is found", 400);
+    const token = req.query.token as string;
+
+    if (!token) throw new ApiError("Token is required", 400);
+    if (!newPass) throw new ApiError("No new password provided", 400);
+
+    let decoded: { email: string };
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET_RESET!) as {
+        email: string;
+      };
+    } catch {
+      throw new ApiError("Token invalid or expired", 400);
     }
-    const result = await this.userService.changePassword(userId, newPass);
+    const result = await this.userService.changePassword(
+      decoded.email,
+      newPass,
+    );
     res.status(200).send(result);
   };
 

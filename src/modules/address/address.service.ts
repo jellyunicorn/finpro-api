@@ -39,6 +39,9 @@ export class AddressService {
       longitude: number;
       isPrimary: boolean;
       label: string;
+      regencyCode: string;
+      districtCode: string;
+      villageCode: string;
     },
   ) => {
     if (body.isPrimary) {

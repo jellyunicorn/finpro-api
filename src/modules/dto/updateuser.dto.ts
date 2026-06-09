@@ -16,7 +16,7 @@ export class updateUserDTO {
   fullName?: string;
 
   @IsString()
-  @MinLength(11)
+  @MinLength(8)
   @MaxLength(13)
   @IsOptional()
   phone?: string;

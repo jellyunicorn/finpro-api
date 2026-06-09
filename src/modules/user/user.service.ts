@@ -91,8 +91,22 @@ export class UserService {
   };
 
   resetPasswordEmail = async (body: resetPasswordDTO) => {
+    const user = await this.prisma.user.findUnique({
+      where: { email: body.email },
+    });
+    if (!user) {
+      throw new ApiError("This User does not exists", 400);
+    }
+
+    if (user.provider !== "CREDENTIALS") {
+      throw new ApiError(
+        "This User Use Social Account to login, try logging in again",
+        400,
+      );
+    }
+
     const token = jwt.sign(
-      { fullName: body.fullName, email: body.email },
+      { id: user.id, email: body.email },
       process.env.JWT_SECRET_RESET as string,
       { expiresIn: EXPIRED_RESET_TOKEN_JWT },
     );
@@ -102,9 +116,9 @@ export class UserService {
       subject: "Reset Password Confirmation Email",
       templateName: "reset-password",
       context: {
-        name: body.fullName,
+        name: user.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        resetUrl: `${process.env.BASE_FE_URL}/dashboard/reset?token=${token}`,
+        resetUrl: `${process.env.BASE_FE_URL}/reset?token=${token}`,
       },
     });
     return { message: "Email has been sent" };
@@ -124,9 +138,9 @@ export class UserService {
     return { email: decoded.email };
   };
 
-  changePassword = async (userId: number, newPass: string) => {
+  changePassword = async (useremail: string, newPass: string) => {
     const user = await this.prisma.user.findUnique({
-      where: { id: userId },
+      where: { email: useremail },
     });
     if (!user) {
       throw new ApiError("This user does not exist", 400);
@@ -134,7 +148,7 @@ export class UserService {
     const hashedPassword = await hash(newPass);
 
     const updatedpass = await this.prisma.user.update({
-      where: { id: userId },
+      where: { email: useremail },
       data: {
         password: hashedPassword,
       },
