@@ -189,4 +189,16 @@ export class OrderServices {
       data: { deletedAt: new Date() },
     });
   };
+  confirmOrder = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+
+    return await this.prisma.order.update({
+      where: { orderId },
+      data: { confirmedAt: new Date(), orderStatus: "CONFIRMED" },
+    });
+  };
 }

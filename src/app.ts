@@ -41,6 +41,7 @@ import { NotificationRouter } from "./modules/notification/notification.router.j
 import { WorkerService } from "./modules/employees/worker.service.js";
 import { WorkerController } from "./modules/employees/worker.controller.js";
 import { WorkerRouter } from "./modules/employees/worker.router.js";
+import { startCronJobs } from "./jobs/cron.js";
 
 export class App {
   app: Express;
@@ -152,6 +153,7 @@ export class App {
   public start() {
     this.app.listen(PORT, () => {
       console.log(`Server running on port: ${PORT}`);
+      startCronJobs();
     });
   }
 }

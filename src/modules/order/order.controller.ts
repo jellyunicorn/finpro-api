@@ -48,4 +48,10 @@ export class OrderController {
     const result = await this.orderService.getOrderDetail(orderId, userId);
     res.status(200).send(result);
   };
+  confirmOrder = async (req: Request, res: Response) => {
+    const userId = res.locals.user.id;
+    const orderId = req.params.orderid;
+    const result = await this.orderService.confirmOrder(orderId, userId);
+    res.status(200).send(result);
+  };
 }

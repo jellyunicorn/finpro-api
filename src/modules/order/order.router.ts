@@ -30,6 +30,11 @@ export class OrderRouter {
       this.orderController.addNewOrder,
     );
 
+    this.router.patch(
+      "/confirm/:orderid",
+      this.authMiddleware.verifyToken,
+      this.orderController.confirmOrder,
+    );
     this.router.get(
       "/:orderid",
       this.authMiddleware.verifyToken,
