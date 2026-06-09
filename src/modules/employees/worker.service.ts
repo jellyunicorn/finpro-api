@@ -29,6 +29,8 @@ export class WorkerService {
         jobId: true,
         station: true,
         createdAt: true,
+        startTime: true,
+        endTime: true,
         order: {
           select: {
             orderItems: {
@@ -47,6 +49,8 @@ export class WorkerService {
       jobId: job.jobId,
       station: job.station,
       createdAt: job.createdAt,
+      startTime: job.startTime,
+      endTime: job.endTime,
       orderItems: job.order.orderItems.map((item) => ({
         id: item.id,
         name: item.name,
@@ -107,7 +111,7 @@ export class WorkerService {
     }
 
     const whereClause = {
-      workerId: worker.id,
+      employeeId: worker.id,
       endTime: null,
     };
 
@@ -130,7 +134,7 @@ export class WorkerService {
     }
 
     const whereClause = {
-      workerId: worker.id,
+      employeeId: worker.id,
       endTime: { not: null },
     };
 
@@ -206,7 +210,7 @@ export class WorkerService {
   };
 
   finishJobProcessing = async (jobId: string) => {
-    await this.prisma.$transaction(async (tx) => {
+    const result = await this.prisma.$transaction(async (tx) => {
       const job = await tx.orderJob.update({
         where: { jobId },
         data: { endTime: new Date() },
@@ -275,8 +279,9 @@ export class WorkerService {
         });
       }
 
+      let nextJob = null;
       if (nextStation && job.station !== Station.PACKING) {
-        await tx.orderJob.create({
+        nextJob = await tx.orderJob.create({
           data: {
             orderId: job.orderId,
             outletId: job.order.outletId,
@@ -285,10 +290,13 @@ export class WorkerService {
           },
         });
       }
+
+      return { job: nextJob };
     });
 
     return {
       message: `Job #${jobId} finished successfully`,
+      job: result.job,
     };
   };
 }
