@@ -13,6 +13,8 @@ export class OrderServices {
     searchQuery: string | undefined,
     monthQuery: number,
     dateQuery: number,
+    page: number,
+    limit: number,
   ) => {
     const where: any = { userId: id, deletedAt: null };
 
@@ -36,11 +38,21 @@ export class OrderServices {
       where.orderId = { contains: searchQuery, mode: "insensitive" };
     }
 
-    return await this.prisma.order.findMany({
+    const skip = (page - 1) * limit;
+
+    const result = await this.prisma.order.findMany({
       where,
       include: { outlet: true, address: true },
       orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
     });
+    const total = await this.prisma.order.count({ where });
+
+    return {
+      data: result,
+      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    };
   };
 
   addNewOrder = async (body: CreateOrderDTO, id: number) => {
@@ -62,7 +74,7 @@ export class OrderServices {
       const order = await tx.order.create({
         data: {
           scheduledTime: new Date(`${body.pickupDate}T${body.pickupTime}`),
-          orderStatus: "PENDING",
+          orderStatus: "WAITING_FOR_DRIVER",
           deliveryCost: 0,
           paymentStatus: "PENDING",
           distance: body.distance,
@@ -114,8 +126,42 @@ export class OrderServices {
     if (!order) throw new ApiError("Order not found", 404);
     const orderid = order.id;
     return await this.prisma.orderItem.findMany({
-      where: { orderId: orderid },
+      where: { orderId: orderid, deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        orderId: true,
+        price: true,
+        quantity: true,
+        weight: true,
+        description: true,
+      },
     });
+  };
+
+  getOrderItemsTotal = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+    const orderid = order.id;
+    const items = await this.prisma.orderItem.findMany({
+      where: { orderId: orderid, deletedAt: null },
+      select: {
+        price: true,
+        quantity: true,
+      },
+    });
+
+    let total: number = 0;
+
+    items.forEach((e) => {
+      const subtotal = e.price * e.quantity;
+      total = total + subtotal;
+    });
+
+    return { total };
   };
 
   getOrderDetail = async (orderId: string, userId: number) => {
@@ -128,6 +174,31 @@ export class OrderServices {
     return await this.prisma.order.findUnique({
       where: { orderId },
       include: { outlet: true, address: true, orderItems: true },
+    });
+  };
+
+  softDeleteOrder = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+
+    return await this.prisma.order.update({
+      where: { orderId },
+      data: { deletedAt: new Date() },
+    });
+  };
+  confirmOrder = async (orderId: string, userId: number) => {
+    const order = await this.prisma.order.findFirst({
+      where: { orderId, userId, deletedAt: null },
+    });
+
+    if (!order) throw new ApiError("Order not found", 404);
+
+    return await this.prisma.order.update({
+      where: { orderId },
+      data: { confirmedAt: new Date(), orderStatus: "CONFIRMED" },
     });
   };
 }

@@ -32,12 +32,16 @@ import { DriverRouter } from "./modules/employees/driver.router.js";
 import { OrderRouter } from "./modules/order/order.router.js";
 import { OrderController } from "./modules/order/order.controller.js";
 import { OrderServices } from "./modules/order/order.service.js";
+import { PaymentService } from "./modules/payment/payment.service.js";
+import { PaymentController } from "./modules/payment/payment.controller.js";
+import { PaymentRouter } from "./modules/payment/payment.router.js";
 import { NotificationService } from "./modules/notification/notification.service.js";
 import { NotificationController } from "./modules/notification/notification.controller.js";
 import { NotificationRouter } from "./modules/notification/notification.router.js";
 import { WorkerService } from "./modules/employees/worker.service.js";
 import { WorkerController } from "./modules/employees/worker.controller.js";
 import { WorkerRouter } from "./modules/employees/worker.router.js";
+import { startCronJobs } from "./jobs/cron.js";
 
 export class App {
   app: Express;
@@ -64,6 +68,7 @@ export class App {
     const authService = new AuthService(prisma, mailService);
     const addressService = new AddressService(prisma);
     const userService = new UserService(prisma, cloudinaryService, mailService);
+    const paymentService = new PaymentService(prisma);
     const orderService = new OrderServices(prisma);
     const attendanceService = new AttendanceService(prisma);
     const driverService = new DriverService(prisma);
@@ -71,6 +76,7 @@ export class App {
     const notificationService = new NotificationService(prisma);
 
     // controllers
+    const paymentController = new PaymentController(paymentService);
     const authController = new AuthController(authService);
     const addressController = new AddressController(addressService);
     const userController = new UserController(userService);
@@ -117,6 +123,11 @@ export class App {
       validationMiddleware,
       authMiddleware,
     );
+    const paymentRouter = new PaymentRouter(
+      paymentController,
+      authMiddleware,
+      validationMiddleware,
+    );
     const notificationRouter = new NotificationRouter(
       notificationController,
       authMiddleware,
@@ -127,6 +138,7 @@ export class App {
     this.app.use("/user", userRouter.getRouter());
     this.app.use("/address", addressRouter.getRouter());
     this.app.use("/attendance", attendanceRouter.getRouter());
+    this.app.use("/payment", paymentRouter.getRouter());
     this.app.use("/driver", driverRouter.getRouter());
     this.app.use("/worker", workerRouter.getRouter());
     this.app.use("/order", orderRouter.getRouter());
@@ -141,6 +153,7 @@ export class App {
   public start() {
     this.app.listen(PORT, () => {
       console.log(`Server running on port: ${PORT}`);
+      startCronJobs();
     });
   }
 }

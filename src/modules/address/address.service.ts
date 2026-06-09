@@ -17,6 +17,9 @@ export class AddressService {
         isPrimary: true,
         userId: true,
         label: true,
+        district: true,
+        regency: true,
+        village: true,
       },
     });
 
@@ -36,6 +39,9 @@ export class AddressService {
       longitude: number;
       isPrimary: boolean;
       label: string;
+      regencyCode: string;
+      districtCode: string;
+      villageCode: string;
     },
   ) => {
     if (body.isPrimary) {
@@ -79,6 +85,9 @@ export class AddressService {
       isPrimary: boolean;
       label: string;
       userId: number;
+      regency: string;
+      district: string;
+      village: string;
     },
   ) => {
     const existing = await this.prisma.userAddress.findFirst({
@@ -99,6 +108,9 @@ export class AddressService {
         longitude: body.longitude,
         isPrimary: body.isPrimary,
         label: body.label,
+        regencyCode: body.regency,
+        districtCode: body.district,
+        villageCode: body.village,
       },
     });
 
@@ -133,5 +145,51 @@ export class AddressService {
     });
 
     return { outlets };
+  };
+
+  getRegency = async () => {
+    const result = await this.prisma.regency.findMany({
+      orderBy: { name: "asc" },
+    });
+    return result;
+  };
+
+  getDistrict = async (regcode: string) => {
+    if (!regcode) {
+      throw new ApiError("need regency code to complete data fetch", 400);
+    }
+
+    const checkcode = await this.prisma.district.findFirst({
+      where: { regencyCode: regcode },
+    });
+
+    if (!checkcode) {
+      throw new ApiError("REGENCY CODE INVALID", 400);
+    }
+
+    const result = await this.prisma.district.findMany({
+      where: { regencyCode: regcode },
+      orderBy: { name: "asc" },
+    });
+    return result;
+  };
+  getVillage = async (discode: string) => {
+    if (!discode) {
+      throw new ApiError("need district code to complete data fetch", 400);
+    }
+
+    const checkcode = await this.prisma.village.findFirst({
+      where: { districtCode: discode },
+    });
+
+    if (!checkcode) {
+      throw new ApiError("DISTRICT CODE INVALID", 400);
+    }
+
+    const result = await this.prisma.village.findMany({
+      where: { districtCode: discode },
+      orderBy: { name: "asc" },
+    });
+    return result;
   };
 }

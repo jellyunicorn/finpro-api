@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "order_items" ALTER COLUMN "weight" SET DEFAULT 0,
+ALTER COLUMN "weight" SET DATA TYPE DOUBLE PRECISION;

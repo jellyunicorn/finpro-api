@@ -30,16 +30,8 @@ export class UserRouter {
       this.authMiddleware.verifyToken,
       this.userController.getUserAddress,
     );
-    this.router.post(
-      "/resettoken",
-      this.authMiddleware.verifyToken,
-      this.userController.verifyResetToken,
-    );
-    this.router.post(
-      "/resetemail",
-      this.authMiddleware.verifyToken,
-      this.userController.resetPasswordEmail,
-    );
+    this.router.post("/resettoken", this.userController.verifyResetToken);
+    this.router.post("/resetemail", this.userController.resetPasswordEmail);
     this.router.patch(
       "/update",
       this.authMiddleware.verifyToken,
@@ -49,7 +41,6 @@ export class UserRouter {
     );
     this.router.patch(
       "/changepassword",
-      this.authMiddleware.verifyToken,
       this.validationMiddleware.validateBody(changePasswordDTO),
       this.userController.changePassword,
     );

@@ -1,0 +1,2 @@
+-- AlterEnum
+ALTER TYPE "PaymentMethod" ADD VALUE 'BCA_VIRTUAL_ACCOUNT';
