@@ -107,6 +107,7 @@ async function main() {
       status: PickupStatus.WAITING_FOR_DRIVER,
       orderId: order.id,
       driverId: employee.id,
+      outletId: outlet.id,
     },
   });
 
@@ -116,6 +117,7 @@ async function main() {
       status: DeliveryStatus.WAITING_FOR_DRIVER,
       orderId: order.id,
       driverId: employee.id,
+      outletId: outlet.id,
     },
   });
 
