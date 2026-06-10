@@ -9,21 +9,21 @@ export class WorkerController {
 
   getAvailableJobs = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const query = plainToInstance(GetAvailableJobsDto, req.params);
+    const query = plainToInstance(GetAvailableJobsDto, req.query);
     const result = await this.workerService.getAvailableJobs(userId, query);
     res.status(200).send(result);
   };
 
   getActiveJobs = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const query = plainToInstance(GetAvailableJobsDto, req.params);
+    const query = plainToInstance(GetAvailableJobsDto, req.query);
     const result = await this.workerService.getActiveJobs(userId, query);
     res.status(200).send(result);
   };
 
   getJobHistory = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const query = plainToInstance(GetAvailableJobsDto, req.params);
+    const query = plainToInstance(GetAvailableJobsDto, req.query);
     const result = await this.workerService.getJobHistory(userId, query);
     res.status(200).send(result);
   };
