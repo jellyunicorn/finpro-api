@@ -3,6 +3,8 @@ import { DriverService } from "./driver.service.js";
 import { plainToInstance } from "class-transformer";
 import { GetPickupHistoryDTO } from "./dto/getPickupHistory.dto.js";
 import { GetDeliveryHistoryDTO } from "./dto/getDeliveryHistory.dto.js";
+import { GetAvailableDeliveriesDto } from "./dto/getAvailableDeliveries.dto.js";
+import { GetAvailablePickupsDto } from "./dto/getAvailablePickups.dto.js";
 
 export class DriverController {
   constructor(private driverService: DriverService) {}
@@ -13,8 +15,20 @@ export class DriverController {
     res.status(200).send(result);
   };
 
-  getAvailableRequests = async (req: Request, res: Response) => {
-    const result = await this.driverService.getAvailableRequests();
+  getAvailablePickups = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const query = plainToInstance(GetAvailablePickupsDto, req.query);
+    const result = await this.driverService.getAvailablePickups(userId, query);
+    res.status(200).send(result);
+  };
+
+  getAvailableDeliveries = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const query = plainToInstance(GetAvailableDeliveriesDto, req.query);
+    const result = await this.driverService.getAvailableDeliveries(
+      userId,
+      query,
+    );
     res.status(200).send(result);
   };
 

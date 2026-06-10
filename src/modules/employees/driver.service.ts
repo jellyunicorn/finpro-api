@@ -6,6 +6,8 @@ import {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
+import { GetAvailableDeliveriesDto } from "./dto/getAvailableDeliveries.dto.js";
+import { GetAvailablePickupsDto } from "./dto/getAvailablePickups.dto.js";
 import { GetDeliveryHistoryDTO } from "./dto/getDeliveryHistory.dto.js";
 import { GetPickupHistoryDTO } from "./dto/getPickupHistory.dto.js";
 
@@ -71,21 +73,64 @@ export class DriverService {
     return !!(activeDelivery || activePickup);
   };
 
-  getAvailableRequests = async () => ({
-    pickups: await this.prisma.orderPickup.findMany({
-      where: { driverId: null, status: PickupStatus.PENDING },
-    }),
-    deliveries: await this.prisma.orderDelivery.findMany({
-      where: { driverId: null, status: DeliveryStatus.PENDING },
-    }),
-  });
-
-  getAvailablePickups = async (driverId: number) => {
+  getAvailablePickups = async (
+    driverId: number,
+    { page, take, sortBy, sortOrder }: GetAvailablePickupsDto,
+  ) => {
     const driver = await this.getDriverByUserId(driverId);
+
+    if (!driver.outletId) {
+      throw new ApiError("Driver has no outlet assigned", 400);
+    }
 
     const outlet = await this.prisma.outlet.findUnique({
       where: { id: driver.outletId },
     });
+    if (!outlet) throw new ApiError("Outlet not found", 404);
+
+    const whereClause = { outletId: outlet.id, status: PickupStatus.PENDING };
+
+    const [pickups, total] = await Promise.all([
+      this.prisma.orderPickup.findMany({
+        where: whereClause,
+        take,
+        skip: (page - 1) * take,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      this.prisma.orderPickup.count({ where: whereClause }),
+    ]);
+
+    return { data: pickups, meta: { page, take, total } };
+  };
+
+  getAvailableDeliveries = async (
+    driverId: number,
+    { page, take, sortBy, sortOrder }: GetAvailableDeliveriesDto,
+  ) => {
+    const driver = await this.getDriverByUserId(driverId);
+
+    if (!driver.outletId) {
+      throw new ApiError("Driver has no outlet assigned", 400);
+    }
+
+    const outlet = await this.prisma.outlet.findUnique({
+      where: { id: driver.outletId },
+    });
+    if (!outlet) throw new ApiError("Outlet not found", 404);
+
+    const whereClause = { outletId: outlet.id, status: DeliveryStatus.PENDING };
+
+    const [deliveries, total] = await Promise.all([
+      this.prisma.orderDelivery.findMany({
+        where: whereClause,
+        take,
+        skip: (page - 1) * take,
+        orderBy: { [sortBy]: sortOrder },
+      }),
+      this.prisma.orderDelivery.count({ where: whereClause }),
+    ]);
+
+    return { data: deliveries, meta: { page, take, total } };
   };
 
   getActiveRequest = async (driverId: number) => {
