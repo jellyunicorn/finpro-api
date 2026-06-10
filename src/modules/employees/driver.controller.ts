@@ -8,42 +8,69 @@ export class DriverController {
   constructor(private driverService: DriverService) {}
 
   getActiveRequest = async (req: Request, res: Response) => {
-    const id = Number(res.locals.user.id);
-    const result = await this.driverService.getActiveRequest(id);
+    const userId = Number(res.locals.user.id);
+    const result = await this.driverService.getActiveRequest(userId);
+    res.status(200).send(result);
+  };
+
+  getAvailableRequests = async (req: Request, res: Response) => {
+    const result = await this.driverService.getAvailableRequests();
     res.status(200).send(result);
   };
 
   getPickupHistory = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const query = plainToInstance(GetPickupHistoryDTO, {
-      ...req.query,
-      userId,
-    });
-    const result = await this.driverService.getPickupHistory(query);
+    const query = plainToInstance(GetPickupHistoryDTO, req.query);
+    const result = await this.driverService.getPickupHistory(userId, query);
     res.status(200).send(result);
   };
 
   getDeliveryHistory = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const query = plainToInstance(GetDeliveryHistoryDTO, {
-      ...req.query,
-      userId,
-    });
-    const result = await this.driverService.getDeliveryHistory(query);
+    const query = plainToInstance(GetDeliveryHistoryDTO, req.query);
+    const result = await this.driverService.getDeliveryHistory(userId, query);
     res.status(200).send(result);
   };
 
   assignPickup = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const pickupId = req.body.pickupId;
+    const pickupId = req.params.id;
     const result = await this.driverService.assignPickup(userId, pickupId);
     res.status(200).send(result);
   };
 
   assignDelivery = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
-    const deliveryId = req.body.deliveryId;
+    const deliveryId = req.params.id;
     const result = await this.driverService.assignDelivery(userId, deliveryId);
+    res.status(200).send(result);
+  };
+
+  finishPickup = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const pickupId = req.params.id;
+    const result = await this.driverService.finishPickup(userId, pickupId);
+    res.status(200).send(result);
+  };
+
+  finishDelivery = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const deliveryId = req.params.id;
+    const result = await this.driverService.finishDelivery(userId, deliveryId);
+    res.status(200).send(result);
+  };
+
+  cancelPickup = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const pickupId = req.params.id;
+    const result = await this.driverService.cancelPickup(userId, pickupId);
+    res.status(200).send(result);
+  };
+
+  cancelDelivery = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const deliveryId = req.params.id;
+    const result = await this.driverService.cancelDelivery(userId, deliveryId);
     res.status(200).send(result);
   };
 }

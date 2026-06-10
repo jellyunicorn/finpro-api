@@ -103,9 +103,11 @@ model Outlet {
   updatedAt  DateTime  @updatedAt @map("updated_at")
   deletedAt  DateTime? @map("deleted_at")
 
-  employees Employee[]
-  orders    Order[]
-  orderJobs OrderJob[]
+  employees       Employee[]
+  orders          Order[]
+  orderJobs       OrderJob[]
+  orderDeliveries OrderDelivery[]
+  orderPickups    OrderPickup[]
 
   @@map("outlets")
 }
@@ -195,6 +197,8 @@ model OrderPickup {
   driver   Employee? @relation(fields: [driverId], references: [id])
   orderId  Int       @map("order_id")
   order    Order     @relation(fields: [orderId], references: [id])
+  outletId Int       @map("outlet_id")
+  outlet   Outlet    @relation(fields: [outletId], references: [id])
 
   @@map("order_pickups")
 }
@@ -211,6 +215,8 @@ model OrderDelivery {
   driver   Employee? @relation(fields: [driverId], references: [id])
   orderId  Int       @map("order_id")
   order    Order     @relation(fields: [orderId], references: [id])
+  outletId Int       @map("outlet_id")
+  outlet   Outlet    @relation(fields: [outletId], references: [id])
 
   @@map("order_deliveries")
 }
