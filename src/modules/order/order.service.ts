@@ -87,6 +87,7 @@ export class OrderServices {
       const orderPickup = await tx.orderPickup.create({
         data: {
           orderId: order.id,
+          outletId: order.outletId,
         },
       });
 

@@ -251,6 +251,7 @@ export class WorkerService {
         const orderDelivery = await tx.orderDelivery.create({
           data: {
             orderId: job.orderId,
+            outletId: job.outletId,
           },
         });
 
