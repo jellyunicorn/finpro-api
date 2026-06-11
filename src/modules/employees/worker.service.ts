@@ -113,6 +113,7 @@ export class WorkerService {
     const whereClause = {
       employeeId: worker.id,
       endTime: null,
+      OR: [{ isBypassed: false }, { bypassApproved: true }],
     };
 
     const jobs = await this.fetchJobs(whereClause, dto);
@@ -251,6 +252,7 @@ export class WorkerService {
         const orderDelivery = await tx.orderDelivery.create({
           data: {
             orderId: job.orderId,
+            outletId: job.outletId,
           },
         });
 

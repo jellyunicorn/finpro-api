@@ -1,3 +1,3 @@
 import { PaginationQueryParams } from "../../pagination/pagination.dto.js";
 
-export class GetDeliveryHistoryDTO extends PaginationQueryParams {}
+export class GetAvailablePickupsDto extends PaginationQueryParams {}
