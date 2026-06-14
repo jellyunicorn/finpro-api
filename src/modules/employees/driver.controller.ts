@@ -53,10 +53,30 @@ export class DriverController {
     res.status(200).send(result);
   };
 
+  advancePickupStatus = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const pickupId = req.params.id;
+    const result = await this.driverService.advancePickupStatus(
+      userId,
+      pickupId,
+    );
+    res.status(200).send(result);
+  };
+
   assignDelivery = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
     const deliveryId = req.params.id;
     const result = await this.driverService.assignDelivery(userId, deliveryId);
+    res.status(200).send(result);
+  };
+
+  advanceDeliveryStatus = async (req: Request, res: Response) => {
+    const userId = Number(res.locals.user.id);
+    const deliveryId = req.params.id;
+    const result = await this.driverService.advanceDeliveryStatus(
+      userId,
+      deliveryId,
+    );
     res.status(200).send(result);
   };
 

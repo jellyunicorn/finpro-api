@@ -1,5 +1,6 @@
 import {
   EmployeeType,
+  OrderStatus,
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
@@ -74,7 +75,7 @@ export class OrderServices {
       const order = await tx.order.create({
         data: {
           scheduledTime: new Date(`${body.pickupDate}T${body.pickupTime}`),
-          orderStatus: "WAITING_FOR_DRIVER",
+          orderStatus: OrderStatus.PENDING,
           deliveryCost: 0,
           paymentStatus: "PENDING",
           distance: body.distance,
