@@ -65,6 +65,20 @@ export class DriverRouter {
     );
 
     this.router.patch(
+      "/pickup/:id/next",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.DRIVER]),
+      this.driverController.advancePickupStatus,
+    );
+
+    this.router.patch(
+      "/delivery/:id/next",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.DRIVER]),
+      this.driverController.advanceDeliveryStatus,
+    );
+
+    this.router.patch(
       "/pickup/:id/finish",
       this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER]),
