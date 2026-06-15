@@ -188,7 +188,7 @@ model OrderJob {
 model OrderPickup {
   id        Int          @id @default(autoincrement())
   pickupId  String       @unique @default(cuid()) @map("pickup_id")
-  status    PickupStatus @default(WAITING_FOR_DRIVER)
+  status    PickupStatus @default(PENDING)
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")
   deletedAt DateTime?    @map("deleted_at")
@@ -206,7 +206,7 @@ model OrderPickup {
 model OrderDelivery {
   id         Int            @id @default(autoincrement())
   deliveryId String         @unique @default(cuid()) @map("delivery_id")
-  status     DeliveryStatus @default(WAITING_FOR_DRIVER)
+  status     DeliveryStatus @default(PENDING)
   createdAt  DateTime       @default(now()) @map("created_at")
   updatedAt  DateTime       @updatedAt @map("updated_at")
   deletedAt  DateTime?      @map("deleted_at")
