@@ -110,6 +110,7 @@ export class AttendanceService {
     await this.prisma.attendance.create({
       data: {
         employeeId: employee.id,
+        startTime: new Date(),
       },
     });
 
