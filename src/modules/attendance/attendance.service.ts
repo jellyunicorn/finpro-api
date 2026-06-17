@@ -3,21 +3,23 @@ import {
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
-import { GetEmployeeAttendanceDTO } from "./dto/getEmployeeAttendance.dto.js";
+import { GetAttendanceByEmployeeIdDTO } from "./dto/getAttendanceByEmployeeId.dto.js";
+import { GetAttendanceByUserIdDTO } from "./dto/getAttendanceByUserId.dto.js";
 import { GetOutletAttendanceLogDTO } from "./dto/getOutletAttendanceLog.dto.js";
 
 export class AttendanceService {
   constructor(private prisma: PrismaClient) {}
 
-  getAttendanceByEmployee = async ({
+  getAttendanceByUserId = async ({
     userId,
     take,
     page,
     sortBy,
     sortOrder,
-  }: GetEmployeeAttendanceDTO) => {
+  }: GetAttendanceByUserIdDTO) => {
     const employee = await this.prisma.employee.findUnique({
       where: { userId },
+      include: { user: true },
     });
 
     if (!employee) {
@@ -38,6 +40,43 @@ export class AttendanceService {
     });
 
     return { data: attendances, meta: { page, take, total } };
+  };
+
+  getAttendanceByEmployeeId = async ({
+    employeeId,
+    take,
+    page,
+    sortBy,
+    sortOrder,
+  }: GetAttendanceByEmployeeIdDTO) => {
+    const employee = await this.prisma.employee.findUnique({
+      where: { id: employeeId },
+      include: { user: true },
+    });
+
+    if (!employee) {
+      throw new ApiError("Employee does not exist", 400);
+    }
+
+    const whereClause = { employeeId };
+
+    const attendances = await this.prisma.attendance.findMany({
+      where: whereClause,
+      take,
+      skip: (page - 1) * take,
+      orderBy: { [sortBy]: sortOrder },
+    });
+
+    const total = await this.prisma.attendance.count({
+      where: whereClause,
+    });
+
+    const data = {
+      attendance: [...attendances],
+      employeeName: employee.user.fullName,
+    };
+
+    return { data, meta: { page, take, total } };
   };
 
   getAttendanceByOutlet = async ({
