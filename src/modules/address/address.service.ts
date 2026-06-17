@@ -4,29 +4,52 @@ import { ApiError } from "../../utils/api-error.js";
 export class AddressService {
   constructor(private prisma: PrismaClient) {}
 
-  getUserAddress = async (userid: number) => {
-    const useraddress = await this.prisma.userAddress.findMany({
-      where: { userId: userid, deletedAt: null },
-      select: {
-        id: true,
-        address: true,
-        city: true,
-        postalCode: true,
-        latitude: true,
-        longitude: true,
-        isPrimary: true,
-        userId: true,
-        label: true,
-        district: true,
-        regency: true,
-        village: true,
-      },
-    });
+  getUserAddress = async (userid: number, page = 1) => {
+    const MAX_TAKE = 6;
+    const currentPage = page > 0 ? page : 1;
+    const skip = (currentPage - 1) * MAX_TAKE;
 
-    if (!useraddress) {
-      return { message: "no address is found" };
-    }
-    return { useraddress };
+    const where = { userId: userid, deletedAt: null };
+
+    const select = {
+      id: true,
+      address: true,
+      city: true,
+      postalCode: true,
+      latitude: true,
+      longitude: true,
+      isPrimary: true,
+      userId: true,
+      label: true,
+      district: true,
+      regency: true,
+      village: true,
+    };
+
+    const [useraddress, total, primary] = await Promise.all([
+      this.prisma.userAddress.findMany({
+        where,
+        select,
+        skip,
+        take: MAX_TAKE,
+      }),
+      this.prisma.userAddress.count({ where }),
+      this.prisma.userAddress.findFirst({
+        where: { ...where, isPrimary: true },
+        select,
+      }),
+    ]);
+
+    return {
+      useraddress,
+      meta: {
+        page: currentPage,
+        take: MAX_TAKE,
+        total,
+        totalPages: Math.ceil(total / MAX_TAKE),
+        primary,
+      },
+    };
   };
 
   createAddress = async (

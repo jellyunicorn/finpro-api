@@ -72,6 +72,21 @@ export class UserService {
     let secure_url: string | undefined = undefined;
 
     if (file) {
+      const allowedTypes = [
+        "image/jpeg",
+        "image/jpg",
+        "image/png",
+        "image/gif",
+      ];
+      if (!allowedTypes.includes(file.mimetype)) {
+        throw new ApiError("File must be a .jpg, .png, or .gif image", 400);
+      }
+
+      const maxSize = 1 * 1024 * 1024; // 1 MB
+      if (file.size > maxSize) {
+        throw new ApiError("File must be smaller than 1 MB", 400);
+      }
+
       const result = await this.cloudinaryService.upload(file);
       secure_url = result.secure_url;
     }
