@@ -55,7 +55,7 @@ export class AuthService {
       context: {
         name: body.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        verifyUrl: `${process.env.BASE_FE_URL}/verified?token=${token}`,
+        verifyUrl: `${process.env.BASE_URL_FE}/verified?token=${token}`,
       },
     });
     return { message: "Email has been sent" };

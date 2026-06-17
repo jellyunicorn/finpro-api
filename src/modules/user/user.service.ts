@@ -133,7 +133,7 @@ export class UserService {
       context: {
         name: user.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        resetUrl: `${process.env.BASE_FE_URL}/reset?token=${token}`,
+        resetUrl: `${process.env.BASE_URL_FE}/reset?token=${token}`,
       },
     });
     return { message: "Email has been sent" };
@@ -199,7 +199,7 @@ export class UserService {
       context: {
         name: userdata.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        verifyUrl: `${process.env.BASE_FE_URL}/dashboard/verify-mail?token=${token}`,
+        verifyUrl: `${process.env.BASE_URL_FE}/dashboard/verify-mail?token=${token}`,
       },
     });
 
@@ -226,7 +226,7 @@ export class UserService {
       context: {
         name: userdata.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        verifyUrl: `${process.env.BASE_FE_URL}/dashboard/verify-mail?token=${token}`,
+        verifyUrl: `${process.env.BASE_URL_FE}/dashboard/verify-mail?token=${token}`,
       },
     });
 
