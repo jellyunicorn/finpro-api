@@ -7,7 +7,8 @@ export class AddressController {
 
   getUserAddress = async (req: Request, res: Response) => {
     const userid = res.locals.user.id;
-    const result = await this.addressService.getUserAddress(userid);
+    const page = Number(req.query.page) || 1;
+    const result = await this.addressService.getUserAddress(userid, page);
     res.status(200).send(result);
   };
   getOutletAddresses = async (req: Request, res: Response) => {
