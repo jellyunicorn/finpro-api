@@ -8,5 +8,5 @@ export class GetOutletAttendanceLogDTO extends PaginationQueryParams {
 
   @IsNumber()
   @IsOptional()
-  attendanceLimit: number = 6;
+  attendanceLimit: number = 5;
 }

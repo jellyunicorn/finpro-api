@@ -3,6 +3,7 @@ import {
   EmployeeType,
   OrderStatus,
   PickupStatus,
+  Prisma,
   PrismaClient,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
@@ -99,7 +100,7 @@ export class DriverService {
   };
 
   private getPickupsWhere = async (
-    whereClause: any,
+    whereClause: Prisma.OrderPickupWhereInput,
     dto: PaginationQueryParams,
   ) => {
     const { page, take, sortBy, sortOrder } = dto;
@@ -141,7 +142,7 @@ export class DriverService {
   };
 
   private getDeliveriesWhere = async (
-    whereClause: any,
+    whereClause: Prisma.OrderDeliveryWhereInput,
     dto: PaginationQueryParams,
   ) => {
     const { page, take, sortBy, sortOrder } = dto;
@@ -228,7 +229,7 @@ export class DriverService {
 
     const outlet = await this.getOutletById(driver.outletId);
 
-    const whereClause = {
+    const whereClause: Prisma.OrderPickupWhereInput = {
       outletId: outlet.id,
       status: PickupStatus.PENDING,
       driverId: null,
@@ -252,7 +253,7 @@ export class DriverService {
     });
     if (!outlet) throw new ApiError("Outlet not found", 404);
 
-    const whereClause = {
+    const whereClause: Prisma.OrderDeliveryWhereInput = {
       outletId: outlet.id,
       status: DeliveryStatus.PENDING,
       driverId: null,
@@ -346,10 +347,22 @@ export class DriverService {
   getPickupHistory = async (userId: number, dto: GetPickupHistoryDTO) => {
     const driver = await this.getDriverByUserId(userId);
 
-    const whereClause = {
+    const whereClause: Prisma.OrderPickupWhereInput = {
       driverId: driver.id,
       status: { in: [PickupStatus.ARRIVED_AT_OUTLET, PickupStatus.CANCELLED] },
     };
+
+    if (dto.startDate || dto.endDate) {
+      whereClause.createdAt = {};
+      if (dto.startDate) {
+        whereClause.createdAt.gte = new Date(dto.startDate);
+      }
+      if (dto.endDate) {
+        const end = new Date(dto.endDate);
+        end.setHours(23, 59, 59, 999);
+        whereClause.createdAt.lte = end;
+      }
+    }
 
     return this.getPickupsWhere(whereClause, dto);
   };
@@ -357,12 +370,24 @@ export class DriverService {
   getDeliveryHistory = async (userId: number, dto: GetDeliveryHistoryDTO) => {
     const driver = await this.getDriverByUserId(userId);
 
-    const whereClause = {
+    const whereClause: Prisma.OrderDeliveryWhereInput = {
       driverId: driver.id,
       status: {
         in: [DeliveryStatus.ARRIVED_AT_CUSTOMER, DeliveryStatus.CANCELLED],
       },
     };
+
+    if (dto.startDate || dto.endDate) {
+      whereClause.createdAt = {};
+      if (dto.startDate) {
+        whereClause.createdAt.gte = new Date(dto.startDate);
+      }
+      if (dto.endDate) {
+        const end = new Date(dto.endDate);
+        end.setHours(23, 59, 59, 999);
+        whereClause.createdAt.lte = end;
+      }
+    }
 
     return this.getDeliveriesWhere(whereClause, dto);
   };
