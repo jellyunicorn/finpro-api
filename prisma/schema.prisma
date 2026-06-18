@@ -51,12 +51,12 @@ model Employee {
 }
 
 model Attendance {
-  id        Int       @id @default(autoincrement())
-  startTime DateTime? @map("start_time")
-  endTime   DateTime? @map("end_time")
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  deletedAt DateTime? @map("deleted_at")
+  id        Int            @id @default(autoincrement())
+  startTime DateTime       @map("start_time")
+  type      AttendanceType
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+  deletedAt DateTime?      @map("deleted_at")
 
   employee   Employee @relation(fields: [employeeId], references: [id])
   employeeId Int      @map("employee_id")
@@ -129,7 +129,7 @@ model Order {
   updatedAt       DateTime       @updatedAt @map("updated_at")
   deletedAt       DateTime?      @map("deleted_at")
   xenditSessionId String?        @map("xendit_session_id")
-  xenditData      String?         @map("xendit_data")
+  xenditData      String?        @map("xendit_data")
 
   userId          Int             @map("user_id")
   user            User            @relation(fields: [userId], references: [id])
@@ -405,4 +405,9 @@ enum ComplaintStatus {
   PENDING
   RESOLVED
   EXPIRED
+}
+
+enum AttendanceType {
+  CLOCK_IN
+  CLOCK_OUT
 }

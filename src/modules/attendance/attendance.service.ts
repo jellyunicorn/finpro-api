@@ -1,6 +1,7 @@
 import {
   EmployeeType,
   PrismaClient,
+  AttendanceType,
 } from "../../../generated/prisma/client.js";
 import { ApiError } from "../../utils/api-error.js";
 import { GetAttendanceByEmployeeIdDTO } from "./dto/getAttendanceByEmployeeId.dto.js";
@@ -16,6 +17,8 @@ export class AttendanceService {
     page,
     sortBy,
     sortOrder,
+    startDate,
+    endDate,
   }: GetAttendanceByUserIdDTO) => {
     const employee = await this.prisma.employee.findUnique({
       where: { userId },
@@ -26,7 +29,19 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 400);
     }
 
-    const whereClause = { employeeId: employee.id };
+    const whereClause: any = { employeeId: employee.id };
+
+    if (startDate || endDate) {
+      whereClause.startTime = {};
+      if (startDate) {
+        whereClause.startTime.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        whereClause.startTime.lte = end;
+      }
+    }
 
     const attendances = await this.prisma.attendance.findMany({
       where: whereClause,
@@ -35,9 +50,7 @@ export class AttendanceService {
       orderBy: { [sortBy]: sortOrder },
     });
 
-    const total = await this.prisma.attendance.count({
-      where: whereClause,
-    });
+    const total = await this.prisma.attendance.count({ where: whereClause });
 
     return { data: attendances, meta: { page, take, total } };
   };
@@ -48,6 +61,8 @@ export class AttendanceService {
     page,
     sortBy,
     sortOrder,
+    startDate,
+    endDate,
   }: GetAttendanceByEmployeeIdDTO) => {
     const employee = await this.prisma.employee.findUnique({
       where: { id: employeeId },
@@ -58,7 +73,19 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 400);
     }
 
-    const whereClause = { employeeId };
+    const whereClause: any = { employeeId };
+
+    if (startDate || endDate) {
+      whereClause.startTime = {};
+      if (startDate) {
+        whereClause.startTime.gte = new Date(startDate);
+      }
+      if (endDate) {
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        whereClause.startTime.lte = end;
+      }
+    }
 
     const attendances = await this.prisma.attendance.findMany({
       where: whereClause,
@@ -67,9 +94,7 @@ export class AttendanceService {
       orderBy: { [sortBy]: sortOrder },
     });
 
-    const total = await this.prisma.attendance.count({
-      where: whereClause,
-    });
+    const total = await this.prisma.attendance.count({ where: whereClause });
 
     const data = {
       attendance: [...attendances],
@@ -88,9 +113,7 @@ export class AttendanceService {
     attendanceLimit,
   }: GetOutletAttendanceLogDTO) => {
     const admin = await this.prisma.employee.findUnique({
-      where: {
-        userId,
-      },
+      where: { userId },
     });
 
     if (!admin || admin.type !== EmployeeType.ADMIN) {
@@ -114,7 +137,7 @@ export class AttendanceService {
         attendance: {
           orderBy: { startTime: "desc" },
           take: attendanceLimit,
-          select: { id: true, startTime: true, endTime: true },
+          select: { id: true, startTime: true, type: true },
         },
       },
     });
@@ -150,6 +173,7 @@ export class AttendanceService {
       data: {
         employeeId: employee.id,
         startTime: new Date(),
+        type: AttendanceType.CLOCK_IN,
       },
     });
 
@@ -165,26 +189,11 @@ export class AttendanceService {
       throw new ApiError("Employee does not exist", 404);
     }
 
-    const latestAttendance = await this.prisma.attendance.findFirst({
-      where: {
-        employeeId: employee.id,
-        endTime: null,
-      },
-      orderBy: {
-        startTime: "desc",
-      },
-    });
-
-    if (!latestAttendance) {
-      throw new ApiError("Employee is not clocked in", 400);
-    }
-
-    await this.prisma.attendance.update({
-      where: {
-        id: latestAttendance.id,
-      },
+    await this.prisma.attendance.create({
       data: {
-        endTime: new Date(),
+        employeeId: employee.id,
+        startTime: new Date(),
+        type: AttendanceType.CLOCK_OUT,
       },
     });
 

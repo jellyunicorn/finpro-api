@@ -42,12 +42,12 @@ export class AttendanceController {
   clockIn = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
     const result = await this.attendanceService.clockIn(userId);
-    res.status(200).send(result);
+    res.status(201).send(result);
   };
 
   clockOut = async (req: Request, res: Response) => {
     const userId = Number(res.locals.user.id);
     const result = await this.attendanceService.clockOut(userId);
-    res.status(200).send(result);
+    res.status(201).send(result);
   };
 }

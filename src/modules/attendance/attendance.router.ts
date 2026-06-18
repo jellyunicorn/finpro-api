@@ -33,13 +33,13 @@ export class AttendanceRouter {
       this.authMiddleware.verifyRole([Role.ADMIN]),
       this.attendanceController.getAttendanceByOutlet,
     );
-    this.router.put(
+    this.router.post(
       "/clock-in",
       this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER, Role.WORKER]),
       this.attendanceController.clockIn,
     );
-    this.router.put(
+    this.router.post(
       "/clock-out",
       this.authMiddleware.verifyToken,
       this.authMiddleware.verifyRole([Role.DRIVER, Role.WORKER]),
