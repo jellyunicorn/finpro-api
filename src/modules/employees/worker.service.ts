@@ -134,10 +134,22 @@ export class WorkerService {
       throw new ApiError("Unauthorized access", 403);
     }
 
-    const whereClause = {
+    const whereClause: Prisma.OrderJobWhereInput = {
       employeeId: worker.id,
       endTime: { not: null },
     };
+
+    if (dto.startDate || dto.endDate) {
+      whereClause.startTime = {};
+      if (dto.startDate) {
+        whereClause.startTime.gte = new Date(dto.startDate);
+      }
+      if (dto.endDate) {
+        const end = new Date(dto.endDate);
+        end.setHours(23, 59, 59, 999);
+        whereClause.startTime.lte = end;
+      }
+    }
 
     const jobs = await this.fetchJobs(whereClause, dto);
 
