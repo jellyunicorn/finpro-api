@@ -5,7 +5,7 @@ export class AddressService {
   constructor(private prisma: PrismaClient) {}
 
   getUserAddress = async (userid: number, page = 1) => {
-    const MAX_TAKE = 6;
+    const MAX_TAKE = 5;
     const currentPage = page > 0 ? page : 1;
     const skip = (currentPage - 1) * MAX_TAKE;
 
@@ -119,6 +119,13 @@ export class AddressService {
 
     if (!existing) {
       throw new Error("Address not found");
+    }
+
+    if (body.isPrimary) {
+      await this.prisma.userAddress.updateMany({
+        where: { userId: userid, isPrimary: true },
+        data: { isPrimary: false },
+      });
     }
 
     const updated = await this.prisma.userAddress.update({

@@ -19,6 +19,9 @@ export class CreateOrderDTO {
 
   @IsNotEmpty()
   @IsDateString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, {
+    message: "pickupDate must be in YYYY-MM-DD format",
+  })
   pickupDate!: string;
 
   @IsNotEmpty()

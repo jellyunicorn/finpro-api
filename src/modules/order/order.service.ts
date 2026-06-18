@@ -57,6 +57,16 @@ export class OrderServices {
   };
 
   addNewOrder = async (body: CreateOrderDTO, id: number) => {
+    const scheduledTime = new Date(`${body.pickupDate}T${body.pickupTime}`);
+
+    if (Number.isNaN(scheduledTime.getTime())) {
+      throw new ApiError("Invalid pickup date or time", 400);
+    }
+
+    if (scheduledTime.getTime() < Date.now()) {
+      throw new ApiError("Pickup time cannot be in the past", 400);
+    }
+
     const checkoutlet = await this.prisma.outlet.findUnique({
       where: { id: body.outletId },
     });
@@ -74,7 +84,7 @@ export class OrderServices {
     await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
         data: {
-          scheduledTime: new Date(`${body.pickupDate}T${body.pickupTime}`),
+          scheduledTime,
           orderStatus: OrderStatus.PENDING,
           deliveryCost: 0,
           paymentStatus: "PENDING",
