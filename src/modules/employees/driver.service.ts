@@ -370,6 +370,7 @@ export class DriverService {
   assignPickup = async (userId: number, pickupId: string) => {
     const driver = await this.getDriverByUserId(userId);
     const pickup = await this.getPickupById(pickupId);
+    const order = await this.getOrderById(pickup.orderId);
 
     if (pickup.driverId != null)
       throw new ApiError("Pickup already assigned", 400);
@@ -379,6 +380,10 @@ export class DriverService {
     await this.prisma.orderPickup.update({
       where: { id: pickup.id },
       data: { driverId: driver.id, status: PickupStatus.WAITING_FOR_DRIVER },
+    });
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: { orderStatus: "WAITING_FOR_DRIVER" },
     });
     return { message: "Pickup assignment successful" };
   };
@@ -395,7 +400,10 @@ export class DriverService {
     await this.prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
-        data: { orderStatus: OrderStatus.OTW_TO_OUTLET },
+        data: {
+          orderStatus: OrderStatus.OTW_TO_OUTLET,
+          pickupTime: new Date(),
+        },
       });
 
       await tx.orderPickup.update({
@@ -490,7 +498,10 @@ export class DriverService {
     await this.prisma.$transaction(async (tx) => {
       await tx.order.update({
         where: { id: order.id },
-        data: { orderStatus: OrderStatus.OTW_TO_CUSTOMER },
+        data: {
+          orderStatus: OrderStatus.OTW_TO_CUSTOMER,
+          deliveredAt: new Date(),
+        },
       });
 
       await tx.orderDelivery.update({

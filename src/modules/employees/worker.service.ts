@@ -248,6 +248,22 @@ export class WorkerService {
         });
       }
 
+      if (nextStatus === OrderStatus.WAITING_FOR_PAYMENT) {
+        const paymentNotification = await tx.notification.create({
+          data: {
+            title: "Payment Required",
+            body: `Order #${job.order.orderId} is packed. Please complete your payment to continue.`,
+          },
+        });
+
+        await tx.notificationsOnUsers.create({
+          data: {
+            userId: job.order.userId,
+            notificationId: paymentNotification.id,
+          },
+        });
+      }
+
       if (nextStatus === OrderStatus.READY_TO_DELIVER) {
         const orderDelivery = await tx.orderDelivery.create({
           data: {
