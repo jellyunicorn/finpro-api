@@ -199,7 +199,7 @@ export class UserService {
       context: {
         name: userdata.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        verifyUrl: `${process.env.BASE_URL_FE}/dashboard/verify-mail?token=${token}`,
+        verifyUrl: `${process.env.BASE_URL_FE}/dashboard/user/verify-mail?token=${token}`,
       },
     });
 
