@@ -48,8 +48,8 @@ export class PaymentService {
         currency: "IDR",
         amount,
         country: "ID",
-        success_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}&success`,
-        failure_return_url: `${process.env.XENDIT_TEST_URL}/orders/${orderId}&failed`,
+        success_return_url: `${process.env.XENDIT_TEST_URL}/user/orders/${orderId}`,
+        failure_return_url: `${process.env.XENDIT_TEST_URL}/user/orders/${orderId}`,
       }),
     });
 
