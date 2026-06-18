@@ -97,17 +97,51 @@ export class PaymentService {
       where: { id: order.id },
       data: {
         paymentStatus: "SUCCESS",
-        paymentMethod: data.channel_code,
+        paymentMethod: "XENDIT",
+        xenditData: data.channel_code,
         paymentTime: data.updated,
       },
     });
 
     if (order.orderStatus === "WAITING_FOR_PAYMENT") {
-      await this.prisma.order.update({
-        where: { id: order.id },
-        data: {
-          orderStatus: "READY_TO_DELIVER",
-        },
+      await this.prisma.$transaction(async (tx) => {
+        await tx.order.update({
+          where: { id: order.id },
+          data: {
+            orderStatus: "READY_TO_DELIVER",
+          },
+        });
+
+        const orderDelivery = await tx.orderDelivery.create({
+          data: {
+            orderId: order.id,
+            outletId: order.outletId,
+          },
+        });
+
+        const driverNotification = await tx.notification.create({
+          data: {
+            title: "Order Ready for Delivery",
+            body: `Order #${orderDelivery.deliveryId} is ready for delivery`,
+          },
+        });
+
+        const drivers = await tx.employee.findMany({
+          where: {
+            outletId: order.outletId,
+            type: "DRIVER",
+          },
+          select: {
+            userId: true,
+          },
+        });
+
+        await tx.notificationsOnUsers.createMany({
+          data: drivers.map((driver) => ({
+            userId: driver.userId,
+            notificationId: driverNotification.id,
+          })),
+        });
       });
     }
 

@@ -10,10 +10,14 @@ export class OrderController {
   getOrders = async (req: Request, res: Response) => {
     const id = res.locals.user.id;
     const searchQuery = req.query.search as string | undefined;
-    const monthQuery = Number(req.query.month) || 0;
-    const dateQuery = Number(req.query.date) || 0;
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 9;
+
+    const clamp = (value: number, min: number, max: number) =>
+      Math.min(Math.max(value, min), max);
+
+    const monthQuery = clamp(Number(req.query.month) || 0, 0, 12);
+    const dateQuery = clamp(Number(req.query.date) || 0, 0, 31);
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = clamp(Number(req.query.limit) || 8, 1, 50);
     const result = await this.orderService.getOrders(
       id,
       searchQuery,

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { PaymentController } from "./payment.controller.js";
+import { Role } from "../../../generated/prisma/enums.js";
 
 export class PaymentRouter {
   private router: Router;
@@ -20,6 +21,7 @@ export class PaymentRouter {
     this.router.post(
       "/:orderid",
       this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.USER]),
       this.paymentController.createPaymentSession,
     );
     this.router.post(

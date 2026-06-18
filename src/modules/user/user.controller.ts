@@ -25,18 +25,6 @@ export class UserController {
     const userId = res.locals.user.id;
     const body = req.body;
     const file = req.file;
-
-    if (
-      file &&
-      !["image/jpeg", "image/png", "image/webp"].includes(file.mimetype)
-    ) {
-      throw new ApiError("Invalid file type", 400);
-    }
-
-    if (file && file.size > 1 * 1024 * 1024) {
-      throw new ApiError("File too large", 400);
-    }
-
     const result = await this.userService.updateUser(userId, body, file);
     res.status(200).send(result);
   };

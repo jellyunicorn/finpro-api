@@ -82,7 +82,7 @@ export class UserService {
         throw new ApiError("File must be a .jpg, .png, or .gif image", 400);
       }
 
-      const maxSize = 1 * 1024 * 1024; // 1 MB
+      const maxSize = 1 * 1024 * 1024;
       if (file.size > maxSize) {
         throw new ApiError("File must be smaller than 1 MB", 400);
       }
@@ -199,7 +199,7 @@ export class UserService {
       context: {
         name: userdata.fullName,
         logoUrl: process.env.MAIL_LOGO_URL,
-        verifyUrl: `${process.env.BASE_URL_FE}/dashboard/user/verify-mail?token=${token}`,
+        verifyUrl: `${process.env.BASE_URL_FE}/dashboard/verify-mail?token=${token}`,
       },
     });
 
