@@ -319,6 +319,27 @@ export class WorkerService {
             employeeId: null,
           },
         });
+
+        const outletWorkers = await tx.employee.findMany({
+          where: {
+            outletId: job.outletId,
+            type: EmployeeType.WORKER,
+          },
+        });
+
+        const workerNotification = await tx.notification.create({
+          data: {
+            title: "Order Ready to be Processed",
+            body: `Order #${nextJob.jobId} ready to be processed at ${nextJob.station} station`,
+          },
+        });
+
+        await tx.notificationsOnUsers.createMany({
+          data: outletWorkers.map((worker) => ({
+            userId: worker.userId,
+            notificationId: workerNotification.id,
+          })),
+        });
       }
 
       return { job: nextJob };
