@@ -326,7 +326,7 @@ export class AuthService {
 
   logout = async (userId: number) => {
     await this.prisma.refreshToken.deleteMany({
-      where: { id: userId },
+      where: { userId },
     });
   };
 }

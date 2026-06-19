@@ -185,7 +185,17 @@ export class OrderServices {
 
     return await this.prisma.order.findUnique({
       where: { orderId },
-      include: { outlet: true, address: true, orderItems: true },
+      include: {
+        outlet: true,
+        address: {
+          include: {
+            regency: { select: { name: true } },
+            district: { select: { name: true } },
+            village: { select: { name: true } },
+          },
+        },
+        orderItems: true,
+      },
     });
   };
 
