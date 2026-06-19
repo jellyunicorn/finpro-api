@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { ValidationMiddleware } from "../../middlewares/validation.middleware.js";
 import { AuthController } from "./auth.controller.js";
-import { loginDTO, registerDTO } from "../dto/auth.dto.js";
+import { googleAuthDTO, loginDTO, registerDTO } from "../dto/auth.dto.js";
 import { createUserDTO } from "../dto/createuser.dto.js";
 import { AuthMiddleware } from "../../middlewares/auth.middleware.js";
 
@@ -33,8 +33,16 @@ export class AuthRouter {
       this.validationMiddleware.validateBody(loginDTO),
       this.authController.loginService,
     );
-    this.router.post("/login/google", this.authController.googleLogin);
-    this.router.post("/register/google", this.authController.googleRegister);
+    this.router.post(
+      "/login/google",
+      this.validationMiddleware.validateBody(googleAuthDTO),
+      this.authController.googleLogin,
+    );
+    this.router.post(
+      "/register/google",
+      this.validationMiddleware.validateBody(googleAuthDTO),
+      this.authController.googleRegister,
+    );
     this.router.get("/verifyemail", this.authController.verifyEmail);
     this.router.post("/refresh", this.authController.refresh);
     this.router.post(

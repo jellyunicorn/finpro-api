@@ -1,10 +1,9 @@
 import {
-  IsEmail,
+  IsDateString,
   IsString,
   MinLength,
   Matches,
   MaxLength,
-  IsNotEmpty,
   IsOptional,
 } from "class-validator";
 
@@ -15,13 +14,13 @@ export class updateUserDTO {
   @IsOptional()
   fullName?: string;
 
-  @IsString()
-  @MinLength(8)
-  @MaxLength(13)
   @IsOptional()
+  @Matches(/^\+?\d{8,13}$/, {
+    message: "phone must be 8-13 digits, optionally starting with +",
+  })
   phone?: string;
 
-  @IsString()
   @IsOptional()
+  @IsDateString()
   birthDate?: string;
 }

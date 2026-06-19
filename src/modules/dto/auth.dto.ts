@@ -34,3 +34,9 @@ export class loginDTO {
   @IsNotEmpty()
   password!: string;
 }
+
+export class googleAuthDTO {
+  @IsString()
+  @IsNotEmpty()
+  accessToken!: string;
+}

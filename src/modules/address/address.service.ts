@@ -5,7 +5,7 @@ export class AddressService {
   constructor(private prisma: PrismaClient) {}
 
   getUserAddress = async (userid: number, page = 1) => {
-    const MAX_TAKE = 5;
+    const MAX_TAKE = 6;
     const currentPage = page > 0 ? page : 1;
     const skip = (currentPage - 1) * MAX_TAKE;
 
@@ -58,13 +58,13 @@ export class AddressService {
       address: string;
       city: string;
       postalCode: string;
-      latitude: number;
-      longitude: number;
-      isPrimary: boolean;
+      latitude: string;
+      longitude: string;
+      isPrimary?: boolean;
       label: string;
-      regencyCode: string;
-      districtCode: string;
-      villageCode: string;
+      regencyCode?: string;
+      districtCode?: string;
+      villageCode?: string;
     },
   ) => {
     if (body.isPrimary) {
@@ -76,7 +76,16 @@ export class AddressService {
 
     const created = await this.prisma.userAddress.create({
       data: {
-        ...body,
+        address: body.address,
+        city: body.city,
+        label: body.label,
+        postalCode: body.postalCode,
+        latitude: body.latitude,
+        longitude: body.longitude,
+        isPrimary: body.isPrimary ?? false,
+        regencyCode: body.regencyCode,
+        districtCode: body.districtCode,
+        villageCode: body.villageCode,
         userId: userid,
       },
     });
@@ -103,8 +112,8 @@ export class AddressService {
       address: string;
       city: string;
       postalCode: string;
-      latitude: number;
-      longitude: number;
+      latitude: string;
+      longitude: string;
       isPrimary: boolean;
       label: string;
       userId: number;
@@ -148,18 +157,24 @@ export class AddressService {
   };
 
   switchPrimaryAddress = async (userid: number, newprimary: number) => {
-    await this.prisma.userAddress.updateMany({
-      where: { userId: userid, isPrimary: true },
-      data: { isPrimary: false },
+    const address = await this.prisma.userAddress.findFirst({
+      where: { id: newprimary, userId: userid, deletedAt: null },
     });
-    const result = await this.prisma.userAddress.update({
-      where: { id: newprimary },
-      data: { isPrimary: true },
-    });
+    if (!address) throw new ApiError("No Address is found", 404);
 
-    return { message: "new primary addres is :", result };
+    await this.prisma.$transaction([
+      this.prisma.userAddress.updateMany({
+        where: { userId: userid, isPrimary: true },
+        data: { isPrimary: false },
+      }),
+      this.prisma.userAddress.update({
+        where: { id: newprimary },
+        data: { isPrimary: true },
+      }),
+    ]);
+
+    return { message: "new primary address is set" };
   };
-
   getOutletAddresses = async () => {
     const outlets = await this.prisma.outlet.findMany({
       where: { deletedAt: null },

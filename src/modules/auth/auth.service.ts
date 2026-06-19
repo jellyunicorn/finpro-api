@@ -4,7 +4,7 @@ import {
   PrismaClient,
   Provider,
 } from "../../../generated/prisma/client.js";
-import { loginDTO, registerDTO } from "../dto/auth.dto.js";
+import { googleAuthDTO, loginDTO, registerDTO } from "../dto/auth.dto.js";
 import { ApiError } from "../../utils/api-error.js";
 import { MailService } from "../mail/mail.service.js";
 import { hash, verify } from "argon2";
@@ -203,7 +203,7 @@ export class AuthService {
     return result;
   };
 
-  googleLogin = async (body: any) => {
+  googleLogin = async (body: googleAuthDTO) => {
     const response = await axios.get<googleapi>(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       {
@@ -259,7 +259,7 @@ export class AuthService {
     return { userWithoutPassword, accessToken, refreshToken };
   };
 
-  googleRegister = async (body: any) => {
+  googleRegister = async (body: googleAuthDTO) => {
     const response = await axios.get<googleapi>(
       "https://www.googleapis.com/oauth2/v3/userinfo",
       {
