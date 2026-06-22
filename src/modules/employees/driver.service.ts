@@ -599,10 +599,18 @@ export class DriverService {
     if (pickup.driverId !== driver.id)
       throw new ApiError("Pickup not assigned to this driver", 404);
 
+    if (pickup.status === PickupStatus.OTW_TO_OUTLET) {
+      throw new ApiError(
+        "Cannot cancel order if items have been picked up",
+        400,
+      );
+    }
+
     await this.prisma.orderPickup.update({
       where: { id: pickup.id },
       data: { status: PickupStatus.PENDING, driverId: null },
     });
+
     return { message: "Pickup request cancelled" };
   };
 
@@ -612,6 +620,13 @@ export class DriverService {
 
     if (delivery.driverId !== driver.id) {
       throw new ApiError("Delivery not assigned to this driver", 404);
+    }
+
+    if (delivery.status === DeliveryStatus.OTW_TO_CUSTOMER) {
+      throw new ApiError(
+        "Cannot cancel order if items have been picked up",
+        400,
+      );
     }
 
     await this.prisma.orderDelivery.update({
