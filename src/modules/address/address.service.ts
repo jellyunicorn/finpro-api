@@ -117,9 +117,9 @@ export class AddressService {
       isPrimary: boolean;
       label: string;
       userId: number;
-      regency: string;
-      district: string;
-      village: string;
+      regencyCode?: string;
+      districtCode?: string;
+      villageCode?: string;
     },
   ) => {
     const existing = await this.prisma.userAddress.findFirst({
@@ -147,9 +147,9 @@ export class AddressService {
         longitude: body.longitude,
         isPrimary: body.isPrimary,
         label: body.label,
-        regencyCode: body.regency,
-        districtCode: body.district,
-        villageCode: body.village,
+        regencyCode: body.regencyCode,
+        districtCode: body.districtCode,
+        villageCode: body.villageCode,
       },
     });
 
