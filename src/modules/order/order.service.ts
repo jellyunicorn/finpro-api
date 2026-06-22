@@ -56,6 +56,31 @@ export class OrderServices {
     };
   };
 
+  countAllActiveOrder = async (id: number) => {
+    const res = await this.prisma.order.count({
+      where: {
+        userId: id,
+        confirmedAt: null,
+        orderStatus: { not: "CANCELLED" },
+        deletedAt: null,
+      },
+    });
+
+    return res;
+  };
+  countAllPendingPayment = async (id: number) => {
+    const res = await this.prisma.order.count({
+      where: {
+        userId: id,
+        confirmedAt: null,
+        orderStatus: "WAITING_FOR_PAYMENT",
+        deletedAt: null,
+      },
+    });
+
+    return res;
+  };
+
   addNewOrder = async (body: CreateOrderDTO, id: number) => {
     const scheduledTime = new Date(`${body.pickupDate}T${body.pickupTime}`);
 

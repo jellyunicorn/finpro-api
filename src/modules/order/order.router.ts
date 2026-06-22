@@ -24,6 +24,18 @@ export class OrderRouter {
       this.authMiddleware.verifyRole([Role.USER]),
       this.orderController.getOrders,
     );
+    this.router.get(
+      "/countactive",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.USER]),
+      this.orderController.countAllActiveOrder,
+    );
+    this.router.get(
+      "/countpendingpayment",
+      this.authMiddleware.verifyToken,
+      this.authMiddleware.verifyRole([Role.USER]),
+      this.orderController.countAllPendingPayment,
+    );
 
     this.router.post(
       "/new",
